@@ -1,0 +1,13 @@
+{
+  "name": "xhamia-shpetimi-tuttlingen",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node src/build.mjs",
+    "dev": "node src/serve.mjs",
+    "test": "node --test tests/site.test.mjs",
+    "lint": "node --check src/build.mjs && node --check src/content.mjs && node --check src/serve.mjs && node --check dist/assets/site.js"
+  },
+  "engines": { "node": ">=22" }
+}
