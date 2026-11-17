@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile, stat } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { paths, pagePath, mosque, approvedTimes, copy } from '../src/content.mjs';
+import { paths, pagePath, mosque, prayerSchedule, approvedTimes, copy } from '../src/content.mjs';
 
 const output = resolve(import.meta.dirname, '../dist');
 test('every public route has its language, metadata, main landmark and matching language switch', async () => {
@@ -56,13 +56,20 @@ test('the homepage hero uses responsive imagery and a verified directions link',
 });
 
 test('unconfirmed prayer times are never presented as real times', async () => {
+  assert.equal(prayerSchedule.approved, false);
   assert.equal(approvedTimes('2026-10-09'), null);
   for (const lang of ['sq', 'de']) for (const page of ['home', 'prayer']) {
     const html = await readFile(resolve(output, `.${pagePath(lang, page)}`, 'index.html'), 'utf8');
     assert.ok(html.includes(copy[lang].prayerPending));
+    assert.ok(html.includes(copy[lang].prayerStatus));
+    assert.ok(html.includes(copy[lang].prayerContact));
+    assert.ok(html.includes('class="prayer-status"'));
+    assert.ok(html.includes('role="status"'));
+    assert.ok(html.includes(`aria-describedby="prayer-status-${lang}-${page === 'home' ? 'home' : 'full'}"`));
     assert.equal((html.match(/class="prayer-time"/g) ?? []).length, 5);
     assert.ok(!/\b(?:06:05|13:15|16:10|18:45|20:05|13:30)\b/.test(html));
     assert.ok(!html.includes('Hermannstraße'));
+    if (page === 'prayer') assert.ok(!html.includes('data-date-step'));
   }
 });
 
