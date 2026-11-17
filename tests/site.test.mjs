@@ -86,6 +86,22 @@ test('the about identity section exposes the association and values in both lang
   }
 });
 
+test('the latest news section links to the official Facebook page without an embed', async () => {
+  for (const lang of ['sq', 'de']) {
+    const home = await readFile(resolve(output, `.${pagePath(lang, 'home')}`, 'index.html'), 'utf8');
+    assert.ok(home.includes(`aria-labelledby="news-heading-${lang}"`));
+    assert.ok(home.includes(`id="news-heading-${lang}"`));
+    assert.ok(home.includes(`class="facebook-panel" href="${mosque.facebook}" target="_blank" rel="noopener noreferrer"`));
+    assert.ok(home.includes(copy[lang].facebookOfficial));
+    assert.ok(home.includes(copy[lang].facebookPrivacy));
+    assert.equal((home.match(/class="news-topics"[\s\S]*?<\/ul>/)?.[0].match(/<li>/g) ?? []).length, 3);
+    for (const topic of copy[lang].newsTopics) assert.ok(home.includes(topic));
+    assert.ok(!home.includes('<iframe'));
+    assert.ok(!home.includes('connect.facebook.net'));
+    assert.ok(!home.includes('facebook.com/plugins'));
+  }
+});
+
 test('the calculated prayer schedule is configured and never hard-codes demonstration times', async () => {
   assert.equal(prayerSchedule.approved, true);
   assert.equal(prayerSchedule.method, 3);
