@@ -25,6 +25,12 @@ test('all internal page and asset links resolve to built files', async () => {
       const path = resolve(output, `.${match[1]}`, match[1].endsWith('/') ? 'index.html' : '');
       assert.ok((await stat(path)).isFile(), `missing link ${match[1]} on ${lang}/${page}`);
     }
+    for (const match of html.matchAll(/srcset="([^"]+)"/g)) {
+      for (const candidate of match[1].split(',')) {
+        const [asset] = candidate.trim().split(/\s+/);
+        assert.ok((await stat(resolve(output, `.${asset}`))).isFile(), `missing srcset asset ${asset} on ${lang}/${page}`);
+      }
+    }
     assert.ok(!/href="#"/.test(html), 'no placeholder links');
   }
 });
@@ -35,6 +41,17 @@ test('the primary navigation exposes support in both languages', async () => {
     const support = await readFile(resolve(output, `.${pagePath(lang, 'support')}`, 'index.html'), 'utf8');
     assert.ok(home.includes(`class="navigation-cta">${copy[lang].nav.support}</a>`));
     assert.ok(support.includes(`class="navigation-cta" aria-current="page">${copy[lang].nav.support}</a>`));
+  }
+});
+
+test('the homepage hero uses responsive imagery and a verified directions link', async () => {
+  for (const lang of ['sq', 'de']) {
+    const html = await readFile(resolve(output, `.${pagePath(lang, 'home')}`, 'index.html'), 'utf8');
+    assert.ok(html.includes('srcset="/assets/hero-640.jpg 640w, /assets/hero.jpg 1024w"'));
+    assert.ok(html.includes('sizes="(max-width: 600px) 100vw, 50vw"'));
+    assert.ok(html.includes('fetchpriority="high" decoding="async"'));
+    assert.ok(html.includes(`class="hero-location" href="${mosque.directions}"`));
+    assert.ok(html.includes(`${mosque.street} · ${mosque.city}`));
   }
 });
 
