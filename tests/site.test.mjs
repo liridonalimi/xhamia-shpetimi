@@ -56,6 +56,21 @@ test('the homepage hero uses responsive imagery and a verified directions link',
   }
 });
 
+test('community cards use clear internal destinations and a safe external Facebook action', async () => {
+  for (const lang of ['sq', 'de']) {
+    const home = await readFile(resolve(output, `.${pagePath(lang, 'home')}`, 'index.html'), 'utf8');
+    const community = await readFile(resolve(output, `.${pagePath(lang, 'community')}`, 'index.html'), 'utf8');
+    assert.equal((home.match(/class="community-card"/g) ?? []).length, 3);
+    assert.ok(home.includes(`class="text-link card-link" href="${pagePath(lang, 'contact')}"`));
+    assert.ok(home.includes(`class="text-link card-link" href="${pagePath(lang, 'community')}"`));
+    assert.ok(home.includes(`class="text-link card-link" href="${pagePath(lang, 'support')}"`));
+    assert.ok(home.includes(`id="community-heading-${lang}"`));
+    assert.ok(home.includes(`aria-labelledby="community-card-${lang}-home-1"`));
+    assert.ok(community.includes(`class="text-link card-link" href="${mosque.facebook}" target="_blank" rel="noopener noreferrer">${copy[lang].facebookCta}`));
+    assert.ok(community.includes(`aria-labelledby="community-card-${lang}-community-2"`));
+  }
+});
+
 test('the calculated prayer schedule is configured and never hard-codes demonstration times', async () => {
   assert.equal(prayerSchedule.approved, true);
   assert.equal(prayerSchedule.method, 3);

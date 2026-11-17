@@ -60,7 +60,7 @@ export const copy = {
     communityIntro: 'Të lidhur me besimin dhe rrënjët tona, me dyer të hapura për takime dhe njohje.',
     cards: [
       { icon: 'book', title: 'Mësim dhe dije', text: 'Për mësimin e Kur’anit dhe informacion mbi kurset, na kontaktoni.', cta: 'Pyet për mësimin' },
-      { icon: 'users', title: 'Jeta në bashkësi', text: 'Ndiqni njoftimet, ligjëratat dhe aktivitetet e xhamisë në Facebook.', cta: 'Ndiq bashkësinë' },
+      { icon: 'users', title: 'Jeta në bashkësi', text: 'Ndiqni njoftimet, ligjëratat dhe aktivitetet e xhamisë në Facebook.', cta: 'Zbulo bashkësinë' },
       { icon: 'heart', title: 'Mbështet xhaminë', text: 'Jepni kontributin tuaj për një vend që na bashkon, sot dhe nesër.', cta: 'Si mund të ndihmoj?' },
     ],
     aboutEyebrow: 'Identitet shqiptar. Vlera të përbashkëta.',
@@ -135,7 +135,7 @@ export const copy = {
     communityIntro: 'Verbunden durch unseren Glauben und unsere Wurzeln, mit offenen Türen für Begegnung und Austausch.',
     cards: [
       { icon: 'book', title: 'Lernen und Wissen', text: 'Für Informationen zum Koranunterricht und zu Kursen kontaktieren Sie uns.', cta: 'Zum Unterricht anfragen' },
-      { icon: 'users', title: 'Gemeindeleben', text: 'Ankündigungen, Vorträge und Aktivitäten finden Sie auf unserer Facebook-Seite.', cta: 'Gemeinde entdecken' },
+      { icon: 'users', title: 'Gemeindeleben', text: 'Ankündigungen, Vorträge und Aktivitäten finden Sie auf unserer Facebook-Seite.', cta: 'Gemeinde kennenlernen' },
       { icon: 'heart', title: 'Moschee unterstützen', text: 'Tragen Sie zu einem Ort bei, der uns heute und morgen verbindet.', cta: 'Wie kann ich helfen?' },
     ],
     aboutEyebrow: 'Albanische Wurzeln. Gemeinsame Werte.',
