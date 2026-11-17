@@ -42,4 +42,5 @@ Faqet Impressum dhe Privatësia janë për plotësim para hapjes për publikun. 
 
 Paneli i administrimit me hyrje të mbrojtur, ruajtja e njoftimeve dhe publikimi i orareve të miratuara do të trajtohen si modul i veçantë. Ky modul ofron kontakt me email, telefon dhe burimin aktual në Facebook.
 
-Dokumentimi për klientin dhe ai teknik janë te `docs/modules/moduli-01/`.
+Dokumentimi për klientin, ai teknik dhe regjistri i seksioneve të përfunduara janë te
+[`docs/modules/moduli-01/`](docs/modules/moduli-01/README.md).

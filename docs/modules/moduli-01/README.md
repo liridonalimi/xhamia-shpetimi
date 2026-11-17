@@ -11,5 +11,6 @@ Statusi i validimit regjistrohet në dokumentimin teknik.
 ## Seksionet e përfunduara
 
 - [Seksioni 01 · Header, logo dhe navigimi](SEKSIONI-01-HEADER-DHE-NAVIGIMI.md)
+- [Seksioni 02 · Hero i faqes kryesore](SEKSIONI-02-HERO-I-FAQES-KRYESORE.md)
 
 Pas çdo seksioni të përfunduar shtohet një dokument i veçantë me ndryshimet, komandat, testet, Cloudflare Preview, PR-në dhe rezultatin në production.
