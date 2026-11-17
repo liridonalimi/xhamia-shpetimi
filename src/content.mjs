@@ -13,8 +13,20 @@ export const mosque = {
   sourceChecked: '2026-10-09',
 };
 
-// Publish only congregation-approved data. No calculated or demonstration times.
-export const prayerSchedule = { timezone: 'Europe/Berlin', approved: false, days: {} };
+// Approved calculated schedule: exact coordinates, Muslim World League, Hanafi Asr.
+// Congregational and Friday prayer times remain congregation-managed information.
+export const prayerSchedule = {
+  timezone: 'Europe/Berlin',
+  approved: true,
+  source: 'AlAdhan',
+  method: 3,
+  methodName: 'Muslim World League',
+  school: 1,
+  schoolName: 'Hanafi',
+  latitude: 47.9801632,
+  longitude: 8.8161992,
+  days: {},
+};
 
 export const paths = {
   sq: { home: '', prayer: 'namazi', about: 'rreth-nesh', community: 'bashkesia', support: 'mbeshtet', contact: 'kontakt', imprint: 'impressum', privacy: 'privatesia' },
@@ -38,8 +50,10 @@ export const copy = {
     headline: 'Besim që na bashkon.', headlineEm: 'Bashkësi që na afron.',
     intro: 'Mirë se vini në Xhaminë Shqiptare të Tuttlingenit. Një vend për besim, dije dhe lidhje që kalojnë brez pas brezi.',
     prayerCta: 'Kohët e namazit', visitCta: 'Na vizitoni', arrow: 'Mëso më shumë',
-    prayerTitle: 'Kohët e namazit', timetable: 'Orari i plotë', prayerPending: 'Orari zyrtar ende nuk është publikuar.',
-    prayerStatus: 'Në pritje të orarit zyrtar', prayerContact: 'Pyet për orarin aktual',
+    prayerTitle: 'Kohët e namazit', timetable: 'Orari i plotë', prayerPending: 'Orari nuk mund të ngarkohet për momentin.',
+    prayerLoading: 'Duke ngarkuar kohët e namazit…', prayerStatus: 'Kohë të llogaritura · MWL Hanafi', prayerContact: 'Pyet për orarin me xhemat',
+    prayerMethod: 'Burimi: AlAdhan · Muslim World League · Hanafi',
+    prayerDisclaimer: 'Kohët e hyrjes janë të llogaritura. Për faljen me xhemat dhe xhumanë, kontaktoni xhaminë.',
     prayerHelp: 'Për kohët e namazit me xhemat dhe namazin e xhumasë, kontaktoni xhaminë.',
     prayers: ['Sabahu', 'Dreka', 'Ikindia', 'Akshami', 'Jacia'],
     communityEyebrow: 'Besim. Dije. Bashkim.', communityTitle: 'Një vend për të gjithë.',
@@ -68,7 +82,7 @@ export const copy = {
     artCaption: 'Besim · Dije · Bashkim', artAlt: 'Ilustrim dekorativ: hark me motive gjeometrike shqiptare, hënë dhe peizazh i qetë.',
     pageTitles: { prayer: 'Namazi dhe orari.', about: 'Rreth bashkësisë sonë.', community: 'Jeta në bashkësi.', support: 'Kontributi juaj ka vlerë.', contact: 'Le të jemi në kontakt.', imprint: 'Impressum', privacy: 'Privatësia' },
     pageDescriptions: {
-      prayer: 'Orari i namazit do të publikohet sipas tabelës së miratuar nga xhamia.',
+      prayer: 'Kohët e hyrjes së namazit llogariten për Tuttlingen me metodën Muslim World League dhe ikindinë Hanafi.',
       about: 'Njihuni me Qendrën Shqiptare Kulturore Islame Shpëtimi e.V. në Tuttlingen.',
       community: 'Informacion, takime dhe lidhje me bashkësinë shqiptare në Tuttlingen.',
       support: 'Mbështetni bashkësinë me një donacion, kohën tuaj ose angazhimin tuaj.',
@@ -77,7 +91,7 @@ export const copy = {
       privacy: 'Informacion mbi shërbimet e jashtme dhe trajtimin e të dhënave në këtë version.',
     },
     prayerSections: [
-      ['Orari i namazit', 'Kohët do të publikohen vetëm pasi të miratohen nga xhamia. Orari i fillimit të namazit dhe koha e faljes me xhemat do të paraqiten veçmas.'],
+      ['Orari i namazit', 'Kohët e hyrjes llogariten nga AlAdhan për koordinatat e xhamisë, me Muslim World League dhe ikindinë Hanafi. Koha e faljes me xhemat konfirmohet veçmas nga xhamia.'],
       ['Namazi i xhumasë', 'Për kohën aktuale të namazit të xhumasë, ju lutemi kontaktoni xhaminë ose ndiqni njoftimet në Facebook.'],
       ['Ramazani dhe Bajrami', 'Oraret e veçanta dhe njoftimet do të publikohen pasi të konfirmohen nga bashkësia.'],
     ],
@@ -98,7 +112,7 @@ export const copy = {
     ],
     legalHeading: 'Informacion në plotësim',
     imprintText: 'Të dhënat e mëposhtme vijnë nga faqja publike e xhamisë. Për versionin përfundimtar duhet të plotësohen përfaqësuesit ligjorë dhe të dhënat e regjistrit të shoqatës.',
-    privacyText: 'Ky version nuk ka formular kontakti, analiza të vizitorëve ose përmbajtje të integruar nga Facebook dhe Google Maps. Butonat hapin faqet e shërbimeve përkatëse. Emaili dhe telefonata hapen në aplikacionin tuaj. Deklarata përfundimtare e privatësisë, me të dhënat e operatorit dhe ofruesit të hosting-ut, duhet të plotësohet para publikimit për publikun.',
+    privacyText: 'Ky version nuk ka formular kontakti, analiza të vizitorëve ose përmbajtje të integruar nga Facebook dhe Google Maps. Kohët e namazit merren nga AlAdhan përmes një endpoint-i të Cloudflare Worker; browser-i nuk lidhet drejtpërdrejt me AlAdhan. Butonat e jashtëm hapin shërbimet përkatëse vetëm pas klikimit. Emaili dhe telefonata hapen në aplikacionin tuaj. Deklarata përfundimtare e privatësisë, me të dhënat e operatorit dhe ofruesit të hosting-ut, duhet të plotësohet para publikimit për publikun.',
     missingLegal: 'Për t’u plotësuar: përfaqësuesit ligjorë, regjistri dhe numri i regjistrimit, informacioni i plotë i privatësisë.',
     contactNote: 'Ju lutemi kontaktoni xhaminë për oraret e vizitave dhe informacion mbi parkimin ose aksesin.',
     today: 'Sot', previous: 'Dita e mëparshme', next: 'Dita e ardhshme', backToday: 'Kthehu te sot',
@@ -111,8 +125,10 @@ export const copy = {
     headline: 'Glaube, der uns verbindet.', headlineEm: 'Gemeinschaft, die uns trägt.',
     intro: 'Willkommen in der Albanischen Moschee in Tuttlingen. Ein Ort für Glauben, Wissen und Verbindungen über Generationen hinweg.',
     prayerCta: 'Gebetszeiten', visitCta: 'Besuchen Sie uns', arrow: 'Mehr erfahren',
-    prayerTitle: 'Gebetszeiten', timetable: 'Zum Zeitplan', prayerPending: 'Der offizielle Gebetsplan ist noch nicht veröffentlicht.',
-    prayerStatus: 'Offizieller Gebetsplan steht noch aus', prayerContact: 'Aktuelle Zeiten erfragen',
+    prayerTitle: 'Gebetszeiten', timetable: 'Zum Zeitplan', prayerPending: 'Der Gebetsplan kann momentan nicht geladen werden.',
+    prayerLoading: 'Gebetszeiten werden geladen…', prayerStatus: 'Berechnete Zeiten · MWL Hanafi', prayerContact: 'Gemeindezeiten erfragen',
+    prayerMethod: 'Quelle: AlAdhan · Muslim World League · Hanafi',
+    prayerDisclaimer: 'Die Beginnzeiten sind berechnet. Gemeinde- und Freitagsgebet bitte direkt bei der Moschee erfragen.',
     prayerHelp: 'Für die Gemeindegebetszeiten und das Freitagsgebet kontaktieren Sie bitte die Moschee.',
     prayers: ['Morgengebet', 'Mittagsgebet', 'Nachmittagsgebet', 'Abendgebet', 'Nachtgebet'],
     communityEyebrow: 'Glaube. Wissen. Gemeinschaft.', communityTitle: 'Ein Ort für alle.',
@@ -140,7 +156,7 @@ export const copy = {
     artCaption: 'Glaube · Wissen · Gemeinschaft', artAlt: 'Dekorative Illustration: Bogen mit albanischen geometrischen Motiven, Mondsichel und ruhiger Landschaft.',
     pageTitles: { prayer: 'Gebet und Gebetszeiten.', about: 'Über unsere Gemeinde.', community: 'Unser Gemeindeleben.', support: 'Ihr Beitrag zählt.', contact: 'Bleiben wir in Kontakt.', imprint: 'Impressum', privacy: 'Datenschutz' },
     pageDescriptions: {
-      prayer: 'Die Gebetszeiten werden nach Freigabe durch die Moschee veröffentlicht.',
+      prayer: 'Die Beginnzeiten werden für Tuttlingen nach Muslim World League und hanafitischer Asr-Berechnung ermittelt.',
       about: 'Lernen Sie die Qendra Shqiptare Kulturore Islame Shpëtimi e.V. in Tuttlingen kennen.',
       community: 'Information, Begegnung und Verbindung mit der albanischen Gemeinde in Tuttlingen.',
       support: 'Unterstützen Sie die Gemeinde durch eine Spende, Ihre Zeit oder Ihr Engagement.',
@@ -149,7 +165,7 @@ export const copy = {
       privacy: 'Informationen über externe Dienste und Datenverarbeitung in dieser Version.',
     },
     prayerSections: [
-      ['Gebetsplan', 'Die Zeiten werden erst nach Freigabe durch die Moschee veröffentlicht. Beginn der Gebetszeit und Gemeindegebetszeit werden getrennt ausgewiesen.'],
+      ['Gebetsplan', 'AlAdhan berechnet die Beginnzeiten für die Koordinaten der Moschee nach Muslim World League und hanafitischer Asr-Berechnung. Die Gemeindegebetszeit bestätigt die Moschee separat.'],
       ['Freitagsgebet', 'Die aktuelle Zeit des Freitagsgebets erfahren Sie direkt bei der Moschee oder über die Facebook-Ankündigungen.'],
       ['Ramadan und Feiertage', 'Besondere Gebetspläne und Ankündigungen werden nach Bestätigung durch die Gemeinde veröffentlicht.'],
     ],
@@ -170,7 +186,7 @@ export const copy = {
     ],
     legalHeading: 'Angaben in Bearbeitung',
     imprintText: 'Die folgenden Angaben stammen von der öffentlichen Facebook-Seite der Moschee. Für die endgültige Fassung sind die vertretungsberechtigten Personen und Vereinsregisterdaten zu ergänzen.',
-    privacyText: 'Diese Version enthält kein Kontaktformular, keine Besucheranalyse und keine eingebetteten Inhalte von Facebook oder Google Maps. Die Schaltflächen öffnen die jeweiligen externen Dienste. E-Mail und Anruf öffnen Ihre entsprechenden Anwendungen. Die endgültige Datenschutzerklärung einschließlich Betreiber- und Hostingangaben muss vor einer Veröffentlichung für die Öffentlichkeit ergänzt werden.',
+    privacyText: 'Diese Version enthält kein Kontaktformular, keine Besucheranalyse und keine eingebetteten Inhalte von Facebook oder Google Maps. Die Gebetszeiten werden über einen Cloudflare-Worker-Endpunkt von AlAdhan abgerufen; der Browser verbindet sich nicht direkt mit AlAdhan. Externe Dienste öffnen sich erst nach einem Klick. E-Mail und Anruf öffnen Ihre entsprechenden Anwendungen. Die endgültige Datenschutzerklärung einschließlich Betreiber- und Hostingangaben muss vor einer Veröffentlichung für die Öffentlichkeit ergänzt werden.',
     missingLegal: 'Noch zu ergänzen: vertretungsberechtigte Personen, Vereinsregister und Registernummer sowie vollständige Datenschutzhinweise.',
     contactNote: 'Bitte kontaktieren Sie die Moschee zu Besuchszeiten, Parkmöglichkeiten und Barrierefreiheit.',
     today: 'Heute', previous: 'Vorheriger Tag', next: 'Nächster Tag', backToday: 'Zurück zu heute',

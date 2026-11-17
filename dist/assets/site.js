@@ -21,12 +21,46 @@
   const today = `${pick('year')}-${pick('month')}-${pick('day')}`;
   let selected = today;
   const dateElements = document.querySelectorAll('[data-prayer-date]');
+  const prayerTimes = [...document.querySelectorAll('[data-prayer-key]')];
+  const prayerStatus = document.querySelector('[data-prayer-status]');
+  let prayerRequest = 0;
+  async function loadPrayerTimes() {
+    if (!prayerTimes.length || !prayerStatus) return;
+    const requestId = ++prayerRequest;
+    const statusTitle = prayerStatus.querySelector('[data-prayer-status-title]');
+    const statusDetail = prayerStatus.querySelector('[data-prayer-status-detail]');
+    prayerStatus.dataset.state = 'loading';
+    statusTitle.textContent = prayerStatus.dataset.loading;
+    statusDetail.textContent = prayerStatus.dataset.method;
+    prayerTimes.forEach(el => { el.textContent = '—'; el.setAttribute('aria-label', prayerStatus.dataset.loading); });
+    try {
+      const response = await fetch(`/api/prayer-times?date=${encodeURIComponent(selected)}`, { headers: { accept: 'application/json' } });
+      if (!response.ok) throw new Error(`Prayer API returned ${response.status}`);
+      const payload = await response.json();
+      if (requestId !== prayerRequest) return;
+      prayerTimes.forEach(el => {
+        const time = payload.timings?.[el.dataset.prayerKey];
+        if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(time ?? '')) throw new Error('Incomplete prayer schedule');
+        el.textContent = time;
+        el.setAttribute('aria-label', `${el.dataset.prayerLabel}: ${time}`);
+      });
+      prayerStatus.dataset.state = 'ready';
+      statusTitle.textContent = prayerStatus.dataset.ready;
+      statusDetail.textContent = prayerStatus.dataset.disclaimer;
+    } catch {
+      if (requestId !== prayerRequest) return;
+      prayerStatus.dataset.state = 'error';
+      statusTitle.textContent = prayerStatus.dataset.error;
+      statusDetail.textContent = prayerStatus.dataset.disclaimer;
+    }
+  }
   function showDate() {
     const date = new Date(`${selected}T12:00:00Z`);
     const monthsSq = ['janar', 'shkurt', 'mars', 'prill', 'maj', 'qershor', 'korrik', 'gusht', 'shtator', 'tetor', 'nëntor', 'dhjetor'];
     const label = lang === 'sq' ? `${date.getUTCDate()} ${monthsSq[date.getUTCMonth()]} ${date.getUTCFullYear()}` : new Intl.DateTimeFormat(locale, { timeZone: 'Europe/Berlin', day: 'numeric', month: 'long', year: 'numeric' }).format(date);
     dateElements.forEach(el => { el.textContent = label; el.setAttribute('datetime', selected); });
     document.querySelectorAll('[data-date-reset]').forEach(el => { el.hidden = selected === today; });
+    loadPrayerTimes();
   }
   document.querySelectorAll('[data-date-step]').forEach(button => button.addEventListener('click', () => {
     const date = new Date(`${selected}T12:00:00Z`); date.setUTCDate(date.getUTCDate() + Number(button.dataset.dateStep)); selected = date.toISOString().slice(0, 10); showDate();
