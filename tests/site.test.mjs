@@ -29,6 +29,15 @@ test('all internal page and asset links resolve to built files', async () => {
   }
 });
 
+test('the primary navigation exposes support in both languages', async () => {
+  for (const lang of ['sq', 'de']) {
+    const home = await readFile(resolve(output, `.${pagePath(lang, 'home')}`, 'index.html'), 'utf8');
+    const support = await readFile(resolve(output, `.${pagePath(lang, 'support')}`, 'index.html'), 'utf8');
+    assert.ok(home.includes(`class="navigation-cta">${copy[lang].nav.support}</a>`));
+    assert.ok(support.includes(`class="navigation-cta" aria-current="page">${copy[lang].nav.support}</a>`));
+  }
+});
+
 test('unconfirmed prayer times are never presented as real times', async () => {
   assert.equal(approvedTimes('2026-10-09'), null);
   for (const lang of ['sq', 'de']) for (const page of ['home', 'prayer']) {
