@@ -71,6 +71,21 @@ test('community cards use clear internal destinations and a safe external Facebo
   }
 });
 
+test('the about identity section exposes the association and values in both languages', async () => {
+  for (const lang of ['sq', 'de']) {
+    const home = await readFile(resolve(output, `.${pagePath(lang, 'home')}`, 'index.html'), 'utf8');
+    const about = await readFile(resolve(output, `.${pagePath(lang, 'about')}`, 'index.html'), 'utf8');
+    assert.ok(home.includes(`aria-labelledby="about-heading-${lang}"`));
+    assert.ok(home.includes(`id="about-heading-${lang}"`));
+    assert.ok(home.includes(mosque.association));
+    assert.ok(home.includes(`class="text-link about-link" href="${pagePath(lang, 'about')}"`));
+    assert.equal((home.match(/<li><span aria-hidden="true">0[1-3]<\/span><strong>/g) ?? []).length, 3);
+    assert.ok(about.includes(`aria-labelledby="about-page-heading-${lang}"`));
+    assert.ok(about.includes(`aria-label="${lang === 'sq' ? 'Vlerat tona' : 'Unsere Werte'}"`));
+    for (const value of copy[lang].values) assert.ok(about.includes(`<strong>${value}</strong>`));
+  }
+});
+
 test('the calculated prayer schedule is configured and never hard-codes demonstration times', async () => {
   assert.equal(prayerSchedule.approved, true);
   assert.equal(prayerSchedule.method, 3);
