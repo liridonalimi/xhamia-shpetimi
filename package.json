@@ -5,11 +5,12 @@
   "type": "module",
   "scripts": {
     "build": "node src/build.mjs",
-    "dev": "node src/serve.mjs",
+    "dev": "wrangler dev --config ./wrangler.jsonc",
+    "dev:static": "node src/serve.mjs",
     "test": "node --test tests/site.test.mjs",
-    "lint": "node --check src/build.mjs && node --check src/content.mjs && node --check src/serve.mjs && node --check dist/assets/site.js",
-    "deploy": "wrangler deploy",
-    "preview": "wrangler preview"
+    "lint": "node --check src/build.mjs && node --check src/content.mjs && node --check src/serve.mjs && node --check src/worker.mjs && node --check dist/assets/site.js",
+    "deploy": "wrangler deploy --config ./wrangler.jsonc",
+    "preview": "wrangler preview --config ./wrangler.jsonc"
   },
   "engines": {
     "node": ">=22"

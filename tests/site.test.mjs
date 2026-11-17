@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile, stat } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { paths, pagePath, mosque, approvedTimes, copy } from '../src/content.mjs';
+import { paths, pagePath, mosque, prayerSchedule, approvedTimes, copy } from '../src/content.mjs';
+import worker, { PRAYER_CONFIG } from '../src/worker.mjs';
 
 const output = resolve(import.meta.dirname, '../dist');
 test('every public route has its language, metadata, main landmark and matching language switch', async () => {
@@ -55,14 +56,56 @@ test('the homepage hero uses responsive imagery and a verified directions link',
   }
 });
 
-test('unconfirmed prayer times are never presented as real times', async () => {
+test('the calculated prayer schedule is configured and never hard-codes demonstration times', async () => {
+  assert.equal(prayerSchedule.approved, true);
+  assert.equal(prayerSchedule.method, 3);
+  assert.equal(prayerSchedule.school, 1);
   assert.equal(approvedTimes('2026-10-09'), null);
   for (const lang of ['sq', 'de']) for (const page of ['home', 'prayer']) {
     const html = await readFile(resolve(output, `.${pagePath(lang, page)}`, 'index.html'), 'utf8');
-    assert.ok(html.includes(copy[lang].prayerPending));
+    assert.ok(html.includes(copy[lang].prayerLoading));
+    assert.ok(html.includes(copy[lang].prayerStatus));
+    assert.ok(html.includes(copy[lang].prayerContact));
+    assert.ok(html.includes('class="prayer-status"'));
+    assert.ok(html.includes('role="status"'));
+    assert.ok(html.includes(`aria-describedby="prayer-status-${lang}-${page === 'home' ? 'home' : 'full'}"`));
     assert.equal((html.match(/class="prayer-time"/g) ?? []).length, 5);
+    assert.equal((html.match(/data-prayer-key=/g) ?? []).length, 5);
     assert.ok(!/\b(?:06:05|13:15|16:10|18:45|20:05|13:30)\b/.test(html));
     assert.ok(!html.includes('Hermannstraße'));
+    if (page === 'prayer') assert.ok(html.includes('data-date-step'));
+  }
+});
+
+test('the Worker proxies a sanitized MWL Hanafi schedule for the mosque coordinates', async () => {
+  assert.deepEqual(PRAYER_CONFIG, {
+    latitude: 47.9801632,
+    longitude: 8.8161992,
+    method: 3,
+    methodName: 'Muslim World League',
+    school: 1,
+    schoolName: 'Hanafi',
+    timezone: 'Europe/Berlin',
+  });
+  const originalFetch = globalThis.fetch;
+  let upstreamUrl;
+  globalThis.fetch = async url => {
+    upstreamUrl = String(url);
+    return Response.json({ data: { timings: { Fajr: '05:45 (CET)', Dhuhr: '12:10', Asr: '15:01', Maghrib: '16:45', Isha: '18:28' } } });
+  };
+  try {
+    const response = await worker.fetch(new Request('https://example.test/api/prayer-times?date=2026-11-17'), {});
+    assert.equal(response.status, 200);
+    assert.match(upstreamUrl, /latitude=47\.9801632/);
+    assert.match(upstreamUrl, /longitude=8\.8161992/);
+    assert.match(upstreamUrl, /method=3/);
+    assert.match(upstreamUrl, /school=1/);
+    const payload = await response.json();
+    assert.deepEqual(payload.timings, { Fajr: '05:45', Dhuhr: '12:10', Asr: '15:01', Maghrib: '16:45', Isha: '18:28' });
+    assert.equal(payload.method, 'Muslim World League');
+    assert.equal(payload.school, 'Hanafi');
+  } finally {
+    globalThis.fetch = originalFetch;
   }
 });
 
@@ -79,5 +122,12 @@ test('no third-party embeds or trackers load automatically', async () => {
   assert.ok(!html.includes('<iframe'));
   assert.ok(!/<(?:img|script)\b[^>]+src="https?:/.test(html));
   const js = await readFile(resolve(output, 'assets/site.js'), 'utf8');
-  assert.ok(!/fetch\(|localStorage|document\.cookie|XMLHttpRequest/.test(js));
+  assert.ok(js.includes('fetch(`/api/prayer-times?date='));
+  assert.ok(!js.includes('api.aladhan.com'));
+  assert.ok(!/localStorage|document\.cookie|XMLHttpRequest/.test(js));
+  for (const lang of ['sq', 'de']) {
+    const privacy = await readFile(resolve(output, `.${pagePath(lang, 'privacy')}`, 'index.html'), 'utf8');
+    assert.ok(privacy.includes('AlAdhan'));
+    assert.ok(privacy.includes('Cloudflare'));
+  }
 });

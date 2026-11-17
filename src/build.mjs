@@ -1,6 +1,6 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { resolve, dirname } from 'node:path';
-import { mosque, copy, paths, pagePath } from './content.mjs';
+import { mosque, prayerSchedule, copy, paths, pagePath } from './content.mjs';
 
 const project = resolve(import.meta.dirname, '..');
 const output = resolve(project, 'dist');
@@ -42,7 +42,13 @@ function header(lang, page) {
 }
 function prayers(lang, full = false) {
   const t = copy[lang];
-  return `<section class="prayer-section ${full ? 'prayer-full' : ''}" aria-labelledby="prayer-heading"><div class="container"><div class="prayer-top"><div><span class="eyebrow light">${t.prayerTitle}</span><h2 id="prayer-heading">${lang === 'sq' ? 'Një çast për namaz.' : 'Ein Moment für das Gebet.'}</h2></div><div class="prayer-date"><time data-prayer-date aria-live="polite"></time>${full ? `<div class="date-controls"><button type="button" data-date-step="-1" aria-label="${t.previous}">${icon('chevron', 'rotate')}</button><button type="button" data-date-step="1" aria-label="${t.next}">${icon('chevron')}</button><button type="button" class="today-button" data-date-reset hidden>${t.backToday}</button></div>` : `<a href="${pagePath(lang, 'prayer')}">${t.timetable}${icon('arrow')}</a>`}</div></div><div class="prayer-grid">${['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'].map((name, index) => `<div class="prayer-item"><span class="prayer-name">${name}</span><span class="prayer-time" aria-label="${t.prayerPending}">—</span><span class="prayer-local">${t.prayers[index]}</span></div>`).join('')}</div><div class="prayer-note"><span class="status-dot" aria-hidden="true"></span><span>${t.prayerPending} <a href="${pagePath(lang, 'contact')}">${lang === 'sq' ? 'Kontakto xhaminë' : 'Moschee kontaktieren'} ${icon('arrow')}</a></span></div></div></section>`;
+  const statusId = `prayer-status-${lang}-${full ? 'full' : 'home'}`;
+  const dateAction = full
+    ? prayerSchedule.approved
+      ? `<div class="date-controls"><button type="button" data-date-step="-1" aria-label="${t.previous}">${icon('chevron', 'rotate')}</button><button type="button" data-date-step="1" aria-label="${t.next}">${icon('chevron')}</button><button type="button" class="today-button" data-date-reset hidden>${t.backToday}</button></div>`
+      : ''
+    : `<a href="${pagePath(lang, 'prayer')}">${t.timetable}${icon('arrow')}</a>`;
+  return `<section class="prayer-section ${full ? 'prayer-full' : ''}" aria-labelledby="prayer-heading"><div class="container"><div class="prayer-top"><div><span class="eyebrow light">${t.prayerTitle}</span><h2 id="prayer-heading">${lang === 'sq' ? 'Një çast për namaz.' : 'Ein Moment für das Gebet.'}</h2></div><div class="prayer-date"><time data-prayer-date aria-live="polite"></time>${dateAction}</div></div><div class="prayer-grid" aria-describedby="${statusId}">${['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'].map((name, index) => `<div class="prayer-item"><span class="prayer-name">${name}</span><span class="prayer-time" data-prayer-key="${name}" data-prayer-label="${esc(t.prayers[index])}" aria-label="${esc(t.prayerLoading)}">—</span><span class="prayer-local">${t.prayers[index]}</span></div>`).join('')}</div><div class="prayer-status" id="${statusId}" role="status" data-prayer-status data-loading="${esc(t.prayerLoading)}" data-ready="${esc(t.prayerStatus)}" data-error="${esc(t.prayerPending)}" data-method="${esc(t.prayerMethod)}" data-disclaimer="${esc(t.prayerDisclaimer)}"><span class="status-dot" aria-hidden="true"></span><div class="prayer-status-copy"><strong data-prayer-status-title>${t.prayerLoading}</strong><span data-prayer-status-detail>${t.prayerMethod}</span></div><a class="text-link" href="${pagePath(lang, 'contact')}">${t.prayerContact}${icon('arrow')}</a></div></div></section>`;
 }
 function communityCards(lang) {
   const t = copy[lang];
