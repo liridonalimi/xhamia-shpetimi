@@ -14,5 +14,6 @@ Statusi i validimit regjistrohet në dokumentimin teknik.
 - [Seksioni 02 · Hero i faqes kryesore](SEKSIONI-02-HERO-I-FAQES-KRYESORE.md)
 - [Seksioni 03 · Kohët e namazit](SEKSIONI-03-KOHET-E-NAMAZIT.md)
 - [Seksioni 04 · Një vend për të gjithë](SEKSIONI-04-NJE-VEND-PER-TE-GJITHE.md)
+- [Seksioni 05 · Identiteti dhe Rreth nesh](SEKSIONI-05-IDENTITETI-DHE-RRETH-NESH.md)
 
 Pas çdo seksioni të përfunduar shtohet një dokument i veçantë me ndryshimet, komandat, testet, Cloudflare Preview, PR-në dhe rezultatin në production.
