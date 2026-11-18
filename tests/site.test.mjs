@@ -141,6 +141,27 @@ test('the support page marks deliberately invalid bank details as demonstration 
   }
 });
 
+test('the visit section presents accessible contact actions without embedding Google Maps', async () => {
+  for (const lang of ['sq', 'de']) {
+    const home = await readFile(resolve(output, `.${pagePath(lang, 'home')}`, 'index.html'), 'utf8');
+    const contact = await readFile(resolve(output, `.${pagePath(lang, 'contact')}`, 'index.html'), 'utf8');
+    assert.ok(home.includes(`aria-labelledby="visit-heading-${lang}"`));
+    assert.ok(home.includes(`id="visit-heading-${lang}"`));
+    assert.ok(contact.includes(`id="page-title-contact-${lang}"`));
+    assert.ok(contact.includes(`aria-labelledby="page-title-contact-${lang}"`));
+    for (const html of [home, contact]) {
+      assert.ok(html.includes(`aria-label="${copy[lang].contactMethodsLabel}"`));
+      assert.ok(html.includes(copy[lang].visitConfirm));
+      assert.ok(html.includes(copy[lang].mapsPrivacy));
+      assert.ok(html.includes(`class="address-card" href="${mosque.directions}" target="_blank" rel="noopener noreferrer"`));
+      assert.ok(html.includes(`href="tel:${mosque.phoneHref}"`));
+      assert.ok(html.includes(`href="mailto:${mosque.email}"`));
+      assert.ok(!html.includes('<iframe'));
+      assert.ok(!html.includes('maps.googleapis.com'));
+    }
+  }
+});
+
 test('the calculated prayer schedule is configured and never hard-codes demonstration times', async () => {
   assert.equal(prayerSchedule.approved, true);
   assert.equal(prayerSchedule.method, 3);
