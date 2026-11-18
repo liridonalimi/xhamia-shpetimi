@@ -102,6 +102,25 @@ test('the latest news section links to the official Facebook page without an emb
   }
 });
 
+test('the support banner presents clear contribution paths before the internal support page', async () => {
+  for (const lang of ['sq', 'de']) {
+    for (const page of ['home', 'about']) {
+      const html = await readFile(resolve(output, `.${pagePath(lang, page)}`, 'index.html'), 'utf8');
+      const banner = html.match(/<section class="support-banner"[\s\S]*?<\/section>/)?.[0] ?? '';
+      assert.ok(banner.includes(`aria-labelledby="support-banner-heading-${lang}"`));
+      assert.ok(banner.includes(`id="support-banner-heading-${lang}"`));
+      assert.ok(banner.includes(`href="${pagePath(lang, 'support')}"`));
+      assert.ok(banner.includes(`aria-label="${copy[lang].supportWaysLabel}"`));
+      assert.equal((banner.match(/<li>/g) ?? []).length, 3);
+      for (const [title] of copy[lang].supportSections) assert.ok(banner.includes(title));
+      assert.ok(!banner.includes('mailto:'));
+      assert.ok(!/IBAN|BIC|Kontonummer/i.test(banner));
+    }
+    const support = await readFile(resolve(output, `.${pagePath(lang, 'support')}`, 'index.html'), 'utf8');
+    assert.ok(support.includes(`aria-labelledby="support-info-heading-${lang}"`));
+  }
+});
+
 test('the calculated prayer schedule is configured and never hard-codes demonstration times', async () => {
   assert.equal(prayerSchedule.approved, true);
   assert.equal(prayerSchedule.method, 3);
