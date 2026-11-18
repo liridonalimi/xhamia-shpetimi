@@ -1,6 +1,7 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { resolve, dirname } from 'node:path';
 import { mosque, prayerSchedule, demoBankDetails, legalProfile, legalCopy, copy, paths, pagePath } from './content.mjs';
+import { SECURITY_HEADERS } from './security.mjs';
 
 const project = resolve(import.meta.dirname, '..');
 const output = resolve(project, 'dist');
@@ -173,4 +174,7 @@ await writeFile(resolve(output, 'sitemap.xml'), `<?xml version="1.0" encoding="U
 await writeFile(resolve(output, 'robots.txt'), legalProfile.approvedForPublicLaunch
   ? `User-agent: *\nAllow: /\nSitemap: ${origin}/sitemap.xml\n`
   : 'User-agent: *\nDisallow: /\n# Private review version. Enable indexing after legal and community approval.\n');
+const staticHeaders = Object.entries(SECURITY_HEADERS).map(([name, value]) => `  ${name}: ${value}`).join('\n');
+const robotsHeader = legalProfile.approvedForPublicLaunch ? 'index, follow' : 'noindex, nofollow';
+await writeFile(resolve(output, '_headers'), `/*\n${staticHeaders}\n  X-Robots-Tag: ${robotsHeader}\n`);
 console.log(`Built ${sitemap.length} bilingual pages, homepage, brand assets, sitemap and 404.`);

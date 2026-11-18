@@ -8,7 +8,7 @@
     "dev": "wrangler dev --config ./wrangler.jsonc",
     "dev:static": "node src/serve.mjs",
     "test": "node --test tests/site.test.mjs",
-    "lint": "node --check src/build.mjs && node --check src/content.mjs && node --check src/serve.mjs && node --check src/worker.mjs && node --check dist/assets/site.js",
+    "lint": "node --check src/build.mjs && node --check src/content.mjs && node --check src/security.mjs && node --check src/serve.mjs && node --check src/worker.mjs && node --check dist/assets/site.js",
     "deploy": "wrangler deploy --config ./wrangler.jsonc",
     "preview": "wrangler preview --config ./wrangler.jsonc"
   },

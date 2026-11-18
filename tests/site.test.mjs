@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFile, stat } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { paths, pagePath, mosque, prayerSchedule, approvedTimes, demoBankDetails, legalProfile, legalCopy, copy } from '../src/content.mjs';
-import worker, { PRAYER_CONFIG } from '../src/worker.mjs';
+import worker, { PRAYER_CONFIG, SECURITY_HEADERS } from '../src/worker.mjs';
 
 const output = resolve(import.meta.dirname, '../dist');
 const productionOrigin = 'https://xhamia-shpetimi.liridon-halimi.workers.dev';
@@ -35,6 +35,24 @@ test('all internal page and asset links resolve to built files', async () => {
       }
     }
     assert.ok(!/href="#"/.test(html), 'no placeholder links');
+  }
+});
+
+test('generated markup has unique ids, valid ARIA references and safe interactive elements', async () => {
+  for (const lang of ['sq', 'de']) for (const page of Object.keys(paths[lang])) {
+    const html = await readFile(resolve(output, `.${pagePath(lang, page)}`, 'index.html'), 'utf8');
+    const ids = [...html.matchAll(/\bid="([^"]+)"/g)].map(match => match[1]);
+    assert.equal(new Set(ids).size, ids.length, `duplicate id on ${lang}/${page}`);
+    const idSet = new Set(ids);
+    for (const match of html.matchAll(/\baria-(?:controls|describedby|labelledby)="([^"]+)"/g)) {
+      for (const reference of match[1].split(/\s+/)) assert.ok(idSet.has(reference), `missing ARIA target ${reference} on ${lang}/${page}`);
+    }
+    for (const match of html.matchAll(/<img\b[^>]*>/g)) assert.match(match[0], /\balt="[^"]*"/, `image without alt on ${lang}/${page}`);
+    for (const match of html.matchAll(/<button\b[^>]*>/g)) assert.match(match[0], /\btype="button"/, `button without an explicit type on ${lang}/${page}`);
+    for (const match of html.matchAll(/<a\b[^>]*target="_blank"[^>]*>/g)) {
+      assert.match(match[0], /\brel="[^"]*noopener[^"]*"/, `external link without noopener on ${lang}/${page}`);
+      assert.match(match[0], /\brel="[^"]*noreferrer[^"]*"/, `external link without noreferrer on ${lang}/${page}`);
+    }
   }
 });
 
@@ -228,6 +246,7 @@ test('the Worker proxies a sanitized MWL Hanafi schedule for the mosque coordina
   try {
     const response = await worker.fetch(new Request('https://example.test/api/prayer-times?date=2026-11-17'), {});
     assert.equal(response.status, 200);
+    for (const [name, value] of Object.entries(SECURITY_HEADERS)) assert.equal(response.headers.get(name), value);
     assert.match(upstreamUrl, /latitude=47\.9801632/);
     assert.match(upstreamUrl, /longitude=8\.8161992/);
     assert.match(upstreamUrl, /method=3/);
@@ -239,6 +258,20 @@ test('the Worker proxies a sanitized MWL Hanafi schedule for the mosque coordina
   } finally {
     globalThis.fetch = originalFetch;
   }
+});
+
+test('the Worker adds security headers to static assets without replacing their headers', async () => {
+  const response = await worker.fetch(new Request('https://example.test/sq/'), {
+    ASSETS: {
+      fetch: async () => new Response('<!doctype html>', {
+        headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'public, max-age=60' },
+      }),
+    },
+  });
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('content-type'), 'text/html; charset=utf-8');
+  assert.equal(response.headers.get('cache-control'), 'public, max-age=60');
+  for (const [name, value] of Object.entries(SECURITY_HEADERS)) assert.equal(response.headers.get(name), value);
 });
 
 test('legal pages separate confirmed association data from launch blockers', async () => {
@@ -266,11 +299,14 @@ test('legal pages separate confirmed association data from launch blockers', asy
 test('production metadata uses the deployed origin while indexing remains blocked', async () => {
   const robots = await readFile(resolve(output, 'robots.txt'), 'utf8');
   const sitemap = await readFile(resolve(output, 'sitemap.xml'), 'utf8');
+  const staticHeaders = await readFile(resolve(output, '_headers'), 'utf8');
   assert.match(robots, /Disallow: \/$/m);
   assert.ok(!robots.includes('Allow: /'));
   assert.ok(sitemap.includes(`${productionOrigin}/sq/`));
   assert.ok(sitemap.includes(`${productionOrigin}/de/datenschutz/`));
   assert.ok(!sitemap.includes('chatgpt.site'));
+  assert.ok(staticHeaders.includes('X-Robots-Tag: noindex, nofollow'));
+  for (const [name, value] of Object.entries(SECURITY_HEADERS)) assert.ok(staticHeaders.includes(`${name}: ${value}`));
   for (const lang of ['sq', 'de']) for (const page of Object.keys(paths[lang])) {
     const html = await readFile(resolve(output, `.${pagePath(lang, page)}`, 'index.html'), 'utf8');
     assert.ok(html.includes(`<link rel="canonical" href="${productionOrigin}${pagePath(lang, page)}"`));

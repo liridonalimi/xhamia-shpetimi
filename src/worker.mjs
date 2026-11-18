@@ -1,3 +1,6 @@
+import { SECURITY_HEADERS } from './security.mjs';
+export { SECURITY_HEADERS } from './security.mjs';
+
 export const PRAYER_CONFIG = Object.freeze({
   latitude: 47.9801632,
   longitude: 8.8161992,
@@ -12,8 +15,14 @@ const prayerKeys = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
 const jsonHeaders = { 'content-type': 'application/json; charset=utf-8' };
 const json = (body, status = 200, extraHeaders = {}) => new Response(JSON.stringify(body), {
   status,
-  headers: { ...jsonHeaders, ...extraHeaders },
+  headers: { ...SECURITY_HEADERS, ...jsonHeaders, ...extraHeaders },
 });
+
+function withSecurityHeaders(response) {
+  const secured = new Response(response.body, response);
+  for (const [name, value] of Object.entries(SECURITY_HEADERS)) secured.headers.set(name, value);
+  return secured;
+}
 
 function validDate(value) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value ?? '')) return false;
@@ -73,6 +82,6 @@ export default {
       if (request.method !== 'GET') return json({ error: 'method_not_allowed' }, 405, { allow: 'GET', 'cache-control': 'no-store' });
       return prayerTimesResponse(request);
     }
-    return env.ASSETS.fetch(request);
+    return withSecurityHeaders(await env.ASSETS.fetch(request));
   },
 };
