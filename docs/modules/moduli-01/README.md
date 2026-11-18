@@ -20,5 +20,6 @@ Statusi i validimit regjistrohet në dokumentimin teknik.
 - [Seksioni 08 · Vizita dhe kontakti](SEKSIONI-08-VIZITA-DHE-KONTAKTI.md)
 - [Seksioni 09 · Footer dhe navigimi përfundimtar](SEKSIONI-09-FOOTER-DHE-NAVIGIMI.md)
 - [Seksioni 10 · Impressum, Privatësia dhe përgatitja për publikim](SEKSIONI-10-IMPRESSUM-PRIVATESIA-DHE-PUBLIKIMI.md)
+- [Seksioni 11 · Kontrolli final teknik](SEKSIONI-11-KONTROLLI-FINAL-TEKNIK.md)
 
 Pas çdo seksioni të përfunduar shtohet një dokument i veçantë me ndryshimet, komandat, testet, Cloudflare Preview, PR-në dhe rezultatin në production.
