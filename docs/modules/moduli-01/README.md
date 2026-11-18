@@ -17,5 +17,6 @@ Statusi i validimit regjistrohet në dokumentimin teknik.
 - [Seksioni 05 · Identiteti dhe Rreth nesh](SEKSIONI-05-IDENTITETI-DHE-RRETH-NESH.md)
 - [Seksioni 06 · Njoftimet dhe Facebook](SEKSIONI-06-NJOFTIMET-DHE-FACEBOOK.md)
 - [Seksioni 07 · Mbështet xhaminë](SEKSIONI-07-MBESHTET-XHAMINE.md)
+- [Seksioni 08 · Vizita dhe kontakti](SEKSIONI-08-VIZITA-DHE-KONTAKTI.md)
 
 Pas çdo seksioni të përfunduar shtohet një dokument i veçantë me ndryshimet, komandat, testet, Cloudflare Preview, PR-në dhe rezultatin në production.
