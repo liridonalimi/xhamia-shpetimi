@@ -2,10 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile, stat } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { paths, pagePath, mosque, prayerSchedule, approvedTimes, demoBankDetails, copy } from '../src/content.mjs';
+import { paths, pagePath, mosque, prayerSchedule, approvedTimes, demoBankDetails, legalProfile, legalCopy, copy } from '../src/content.mjs';
 import worker, { PRAYER_CONFIG } from '../src/worker.mjs';
 
 const output = resolve(import.meta.dirname, '../dist');
+const productionOrigin = 'https://xhamia-shpetimi.liridon-halimi.workers.dev';
 test('every public route has its language, metadata, main landmark and matching language switch', async () => {
   for (const lang of ['sq', 'de']) for (const page of Object.keys(paths[lang])) {
     const html = await readFile(resolve(output, `.${pagePath(lang, page)}`, 'index.html'), 'utf8');
@@ -13,6 +14,7 @@ test('every public route has its language, metadata, main landmark and matching 
     assert.ok(html.includes('<main id="main">'));
     assert.equal((html.match(/<h1\b/g) ?? []).length, 1);
     assert.ok(html.includes('name="description"'));
+    assert.ok(html.includes('name="robots" content="noindex,nofollow"'));
     assert.ok(html.includes(`href="${pagePath(lang === 'sq' ? 'de' : 'sq', page)}" lang=`));
     assert.ok(html.includes(`href="tel:${mosque.phoneHref}"`));
     assert.ok(html.includes(mosque.email));
@@ -239,11 +241,40 @@ test('the Worker proxies a sanitized MWL Hanafi schedule for the mosque coordina
   }
 });
 
-test('legal pages identify the missing association information', async () => {
+test('legal pages separate confirmed association data from launch blockers', async () => {
+  assert.equal(legalProfile.approvedForPublicLaunch, false);
+  assert.equal(legalProfile.representative, null);
+  assert.equal(legalProfile.registerCourt, null);
+  assert.equal(legalProfile.registerNumber, null);
   for (const lang of ['sq', 'de']) {
-    const html = await readFile(resolve(output, `.${pagePath(lang, 'imprint')}`, 'index.html'), 'utf8');
-    assert.ok(html.includes(copy[lang].legalDraft));
-    assert.ok(html.includes(copy[lang].missingLegal));
+    const imprint = await readFile(resolve(output, `.${pagePath(lang, 'imprint')}`, 'index.html'), 'utf8');
+    const privacy = await readFile(resolve(output, `.${pagePath(lang, 'privacy')}`, 'index.html'), 'utf8');
+    assert.ok(imprint.includes(legalCopy[lang].status));
+    assert.ok(imprint.includes(mosque.association));
+    assert.ok(imprint.includes(legalCopy[lang].representedBy));
+    assert.ok(imprint.includes(legalCopy[lang].registerNumber));
+    assert.ok(imprint.includes(legalCopy[lang].missing));
+    assert.ok(imprint.includes('https://www.gesetze-im-internet.de/ddg/__5.html'));
+    assert.ok(privacy.includes(legalCopy[lang].hostingTitle));
+    assert.ok(privacy.includes(legalCopy[lang].rightsTitle));
+    assert.ok(privacy.includes('LfDI Baden-Württemberg'));
+    assert.ok(privacy.includes('https://www.cloudflare.com/cloudflare-customer-dpa/'));
+    assert.ok(!/VR\s*\d+/.test(imprint));
+  }
+});
+
+test('production metadata uses the deployed origin while indexing remains blocked', async () => {
+  const robots = await readFile(resolve(output, 'robots.txt'), 'utf8');
+  const sitemap = await readFile(resolve(output, 'sitemap.xml'), 'utf8');
+  assert.match(robots, /Disallow: \/$/m);
+  assert.ok(!robots.includes('Allow: /'));
+  assert.ok(sitemap.includes(`${productionOrigin}/sq/`));
+  assert.ok(sitemap.includes(`${productionOrigin}/de/datenschutz/`));
+  assert.ok(!sitemap.includes('chatgpt.site'));
+  for (const lang of ['sq', 'de']) for (const page of Object.keys(paths[lang])) {
+    const html = await readFile(resolve(output, `.${pagePath(lang, page)}`, 'index.html'), 'utf8');
+    assert.ok(html.includes(`<link rel="canonical" href="${productionOrigin}${pagePath(lang, page)}"`));
+    assert.ok(html.includes(`<meta property="og:url" content="${productionOrigin}${pagePath(lang, page)}"`));
   }
 });
 
