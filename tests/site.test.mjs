@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile, stat } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { paths, pagePath, mosque, prayerSchedule, approvedTimes, copy } from '../src/content.mjs';
+import { paths, pagePath, mosque, prayerSchedule, approvedTimes, demoBankDetails, copy } from '../src/content.mjs';
 import worker, { PRAYER_CONFIG } from '../src/worker.mjs';
 
 const output = resolve(import.meta.dirname, '../dist');
@@ -118,6 +118,26 @@ test('the support banner presents clear contribution paths before the internal s
     }
     const support = await readFile(resolve(output, `.${pagePath(lang, 'support')}`, 'index.html'), 'utf8');
     assert.ok(support.includes(`aria-labelledby="support-info-heading-${lang}"`));
+  }
+});
+
+test('the support page marks deliberately invalid bank details as demonstration data', async () => {
+  assert.deepEqual(demoBankDetails, {
+    valid: false,
+    iban: 'DE00 0000 0000 0000 0000 00',
+    bic: 'BEISPIELXXX',
+  });
+  for (const lang of ['sq', 'de']) {
+    const support = await readFile(resolve(output, `.${pagePath(lang, 'support')}`, 'index.html'), 'utf8');
+    assert.ok(support.includes('data-demo-bank-details'));
+    assert.ok(support.includes(copy[lang].bankDemoBadge));
+    assert.ok(support.includes(copy[lang].bankDemoNotice));
+    assert.ok(support.includes(`<code>${demoBankDetails.iban}</code>`));
+    assert.ok(support.includes(`<code>${demoBankDetails.bic}</code>`));
+    assert.ok(!/<form\b|payment|checkout|stripe/i.test(support));
+    const home = await readFile(resolve(output, `.${pagePath(lang, 'home')}`, 'index.html'), 'utf8');
+    assert.ok(!home.includes(demoBankDetails.iban));
+    assert.ok(!home.includes(demoBankDetails.bic));
   }
 });
 
