@@ -162,6 +162,30 @@ test('the visit section presents accessible contact actions without embedding Go
   }
 });
 
+test('the global footer exposes complete navigation, contact and legal actions', async () => {
+  const footerPages = Object.keys(paths.sq);
+  for (const lang of ['sq', 'de']) for (const page of footerPages) {
+    const html = await readFile(resolve(output, `.${pagePath(lang, page)}`, 'index.html'), 'utf8');
+    const footer = html.match(/<footer class="site-footer"[\s\S]*?<\/footer>/)?.[0] ?? '';
+    assert.ok(footer.includes(`aria-labelledby="footer-heading-${lang}"`));
+    assert.ok(footer.includes(`id="footer-heading-${lang}"`));
+    assert.ok(footer.includes(`aria-labelledby="footer-navigation-label-${lang}"`));
+    assert.ok(footer.includes(`aria-labelledby="footer-contact-label-${lang}"`));
+    for (const key of ['home', 'prayer', 'about', 'community', 'contact', 'support']) {
+      assert.ok(footer.includes(`class="footer-nav-link" href="${pagePath(lang, key)}"`));
+    }
+    assert.ok(footer.includes(`class="footer-contact-link" href="${mosque.directions}" target="_blank" rel="noopener noreferrer"`));
+    assert.ok(footer.includes(`href="tel:${mosque.phoneHref}"`));
+    assert.ok(footer.includes(`href="mailto:${mosque.email}"`));
+    assert.ok(footer.includes(`class="footer-social-link" href="${mosque.facebook}" target="_blank" rel="noopener noreferrer"`));
+    assert.ok(footer.includes(`aria-label="${copy[lang].footerLegal}"`));
+    assert.ok(footer.includes(`href="${pagePath(lang, 'imprint')}"`));
+    assert.ok(footer.includes(`href="${pagePath(lang, 'privacy')}"`));
+    assert.ok(footer.includes(`href="${pagePath(lang === 'sq' ? 'de' : 'sq', page)}" lang=`));
+    assert.equal((footer.match(/class="footer-values"[\s\S]*?<\/ul>/)?.[0].match(/<li>/g) ?? []).length, 3);
+  }
+});
+
 test('the calculated prayer schedule is configured and never hard-codes demonstration times', async () => {
   assert.equal(prayerSchedule.approved, true);
   assert.equal(prayerSchedule.method, 3);
