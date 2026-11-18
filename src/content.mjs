@@ -13,6 +13,13 @@ export const mosque = {
   sourceChecked: '2026-10-09',
 };
 
+// Deliberately invalid placeholders for layout review. Never use for payments.
+export const demoBankDetails = Object.freeze({
+  valid: false,
+  iban: 'DE00 0000 0000 0000 0000 00',
+  bic: 'BEISPIELXXX',
+});
+
 // Approved calculated schedule: exact coordinates, Muslim World League, Hanafi Asr.
 // Congregational and Friday prayer times remain congregation-managed information.
 export const prayerSchedule = {
@@ -77,6 +84,9 @@ export const copy = {
     supportTitle: 'Së bashku e mbajmë gjallë bashkësinë.',
     supportText: 'Çdo kontribut ka vlerë. Na kontaktoni për donacione, anëtarësim ose angazhim vullnetar.',
     supportCta: 'Dua të kontribuoj',
+    bankDemoTitle: 'Të dhëna bankare · Shembull', bankDemoBadge: 'Vetëm demonstrim',
+    bankDemoNotice: 'Këto të dhëna nuk janë të vlefshme. Mos i përdorni për pagesë; të dhënat zyrtare do të vendosen më vonë.',
+    bankHolderLabel: 'Përfituesi', bankIbanLabel: 'IBAN shembull', bankBicLabel: 'BIC shembull',
     visitEyebrow: 'Ejani të njihemi', visitTitle: 'Ju mirëpresim\nnë Tuttlingen.',
     visitText: 'Për një vizitë, pyetje ose takim, mund të na kontaktoni drejtpërdrejt.',
     directions: 'Si të na gjeni', call: 'Na telefononi', email: 'Na shkruani', address: 'Adresa',
@@ -154,6 +164,9 @@ export const copy = {
     supportTitle: 'Gemeinsam tragen wir unsere Gemeinde.',
     supportText: 'Jeder Beitrag zählt. Kontaktieren Sie uns zu Spenden, Mitgliedschaft oder ehrenamtlichem Engagement.',
     supportCta: 'Ich möchte helfen',
+    bankDemoTitle: 'Bankverbindung · Beispiel', bankDemoBadge: 'Nur Demo',
+    bankDemoNotice: 'Diese Angaben sind nicht gültig. Bitte nicht für Zahlungen verwenden; die offiziellen Bankdaten werden später ergänzt.',
+    bankHolderLabel: 'Empfänger', bankIbanLabel: 'Beispiel-IBAN', bankBicLabel: 'Beispiel-BIC',
     visitEyebrow: 'Lernen wir uns kennen', visitTitle: 'Willkommen\nin Tuttlingen.',
     visitText: 'Für einen Besuch, Fragen oder ein Treffen können Sie uns direkt kontaktieren.',
     directions: 'Route planen', call: 'Anrufen', email: 'E-Mail schreiben', address: 'Adresse',
