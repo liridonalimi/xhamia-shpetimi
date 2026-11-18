@@ -1,10 +1,10 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { resolve, dirname } from 'node:path';
-import { mosque, prayerSchedule, demoBankDetails, copy, paths, pagePath } from './content.mjs';
+import { mosque, prayerSchedule, demoBankDetails, legalProfile, legalCopy, copy, paths, pagePath } from './content.mjs';
 
 const project = resolve(import.meta.dirname, '..');
 const output = resolve(project, 'dist');
-const origin = 'https://xhamia-shpetimi-tuttlingen.liridonalimi.chatgpt.site';
+const origin = 'https://xhamia-shpetimi.liridon-halimi.workers.dev';
 const esc = value => String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
 const icons = {
   arrow: '<path d="M5 12h14m-6-6 6 6-6 6"/>',
@@ -106,6 +106,38 @@ function pageIntro(lang, page) {
 function editorial(sections, lang, contact = false) {
   return `<section class="editorial container">${sections.map(([title, text], index) => `<article class="editorial-row"><span class="editorial-number" aria-hidden="true">${String(index + 1).padStart(2, '0')}</span><h2>${title}</h2><div><p>${text}</p>${contact ? `<a class="text-link" href="${mailLink(title)}">${copy[lang].email}${icon('arrow')}</a>` : ''}</div></article>`).join('')}</section>`;
 }
+function legalStatus(lang) {
+  const legal = legalCopy[lang];
+  return `<aside class="legal-readiness" aria-labelledby="legal-readiness-${lang}"><span class="legal-readiness-label">${legal.status}</span><p id="legal-readiness-${lang}">${legal.statusText}</p></aside>`;
+}
+function legalContact(lang) {
+  const legal = legalCopy[lang];
+  return `<address class="legal-contact"><strong>${esc(mosque.association)}</strong><span>${esc(mosque.street)}<br>${esc(mosque.postalCode)} ${esc(mosque.city)}</span><a href="tel:${mosque.phoneHref}">${esc(mosque.phone)}</a><a href="mailto:${mosque.email}">${esc(mosque.email)}</a><dl><div><dt>${legal.representedBy}</dt><dd class="legal-pending">${legalProfile.representative ?? legal.missing}</dd></div><div><dt>${legal.register}</dt><dd class="legal-pending">${legalProfile.registerCourt ?? legal.missing}</dd></div><div><dt>${legal.registerNumber}</dt><dd class="legal-pending">${legalProfile.registerNumber ?? legal.missing}</dd></div><div><dt>${legal.vat}</dt><dd>${legalProfile.vat ?? legal.conditional}</dd></div></dl></address>`;
+}
+function launchChecklist(lang) {
+  const legal = legalCopy[lang];
+  return `<section class="legal-checklist" aria-labelledby="legal-checklist-${lang}"><h2 id="legal-checklist-${lang}">${legal.launchTitle}</h2><ul>${legal.launchItems.map(item => `<li>${icon('check')}<span>${item}</span></li>`).join('')}</ul></section>`;
+}
+function imprintPage(lang) {
+  const legal = legalCopy[lang];
+  return `<div class="legal-layout container">${legalStatus(lang)}<section class="legal-card" aria-labelledby="imprint-known-${lang}"><span class="eyebrow">${legal.known}</span><h2 id="imprint-known-${lang}">${legal.operator}</h2>${legalContact(lang)}<p class="legal-note">${legal.sourceNote}</p><a class="legal-source" href="https://www.gesetze-im-internet.de/ddg/__5.html" target="_blank" rel="noopener noreferrer">${legal.officialSource}: § 5 DDG${icon('external')}</a></section>${launchChecklist(lang)}</div>`;
+}
+function privacyPage(lang) {
+  const legal = legalCopy[lang];
+  const sections = [
+    [legal.controllerTitle, `<p>${legal.controllerText}</p>${legalContact(lang)}`],
+    [legal.hostingTitle, `<p>${legal.hostingText}</p><a class="legal-source" href="https://www.cloudflare.com/cloudflare-customer-dpa/" target="_blank" rel="noopener noreferrer">Cloudflare Data Processing Addendum${icon('external')}</a>`],
+    [legal.prayerTitle, `<p>${legal.prayerText}</p>`],
+    [legal.externalTitle, `<p>${legal.externalText}</p>`],
+    [legal.absentTitle, `<ul class="legal-facts">${legal.absentItems.map(item => `<li>${icon('check')}<span>${item}</span></li>`).join('')}</ul>`],
+    [legal.basisTitle, `<p>${legal.basisText}</p>`],
+    [legal.retentionTitle, `<p>${legal.retentionText}</p>`],
+    [legal.rightsTitle, `<p>${legal.rightsText}</p>`],
+    [legal.complaintTitle, `<p>${legal.complaintText}</p><address class="authority-address">Der Landesbeauftragte für den Datenschutz und die Informationsfreiheit Baden-Württemberg<br>Heilbronner Straße 35 · 70191 Stuttgart<br><a href="mailto:poststelle@lfdi.bwl.de">poststelle@lfdi.bwl.de</a></address><a class="legal-source" href="https://www.baden-wuerttemberg.datenschutz.de/kontakt-aufnehmen/" target="_blank" rel="noopener noreferrer">LfDI Baden-Württemberg${icon('external')}</a>`],
+    [legal.transfersTitle, `<p>${legal.transfersText}</p><a class="legal-source" href="https://www.cloudflare.com/cloudflare-customer-dpa/" target="_blank" rel="noopener noreferrer">Cloudflare DPA${icon('external')}</a>`],
+  ];
+  return `<div class="legal-layout container">${legalStatus(lang)}<section class="legal-card privacy-intro"><p>${legal.privacyIntro}</p><span>${legal.updated}</span></section><div class="privacy-sections">${sections.map(([title, content]) => `<section class="privacy-card"><h2>${title}</h2>${content}</section>`).join('')}</div>${launchChecklist(lang)}</div>`;
+}
 function innerPage(lang, page) {
   const t = copy[lang];
   const intro = pageIntro(lang, page);
@@ -114,14 +146,17 @@ function innerPage(lang, page) {
   if (page === 'community') return `${intro}<section class="container inner-cards" aria-label="${esc(t.communityTitle)}">${communityCards(lang, 'community')}</section>${editorial(t.communitySections, lang, true)}<section class="container facebook-callout"><div>${icon('facebook')}<h2>Xhamia e Tuttlingenit</h2><p>${t.newsText}</p></div>${button(mosque.facebook, t.facebookCta, false, 'external', true)}</section>`;
   if (page === 'support') return `${intro}${editorial(t.supportSections, lang, true)}${demoBankCard(lang)}<section class="container support-info" aria-labelledby="support-info-heading-${lang}"><div>${icon('heart')}<h2 id="support-info-heading-${lang}">${t.supportTitle}</h2><p>${t.supportText}</p></div>${button(mailLink(t.supportCta), t.supportCta)}</section>`;
   if (page === 'contact') return `${intro}${visit(lang, false)}<div class="container contact-footnote"><p>${t.contactNote}</p><a class="text-link" href="${mosque.facebook}" target="_blank" rel="noopener noreferrer">${t.facebookCta}${icon('external')}</a></div>`;
-  if (page === 'imprint' || page === 'privacy') return `${intro}<section class="legal-section container"><span class="legal-status">${t.legalDraft}</span><h2>${t.legalHeading}</h2><p>${page === 'imprint' ? t.imprintText : t.privacyText}</p>${page === 'imprint' ? `<address><strong>${esc(mosque.association)}</strong><br>${mosque.street}<br>${mosque.postalCode} ${mosque.city}<br><a href="tel:${mosque.phoneHref}">${mosque.phone}</a><br><a href="mailto:${mosque.email}">${mosque.email}</a></address><p class="legal-missing">${t.missingLegal}</p>` : ''}</section>`;
+  if (page === 'imprint') return `${intro}${imprintPage(lang)}`;
+  if (page === 'privacy') return `${intro}${privacyPage(lang)}`;
   throw new Error(`Unknown page: ${page}`);
 }
 function document(lang, page) {
   const t = copy[lang];
   const title = page === 'home' ? `${mosque.publicName} · Shpëtimi` : `${t.nav[page]} · Shpëtimi Tuttlingen`;
   const description = page === 'home' ? t.intro : t.pageDescriptions[page];
-  return `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>${esc(title)}</title><meta name="description" content="${esc(description)}"/><meta name="theme-color" content="#193e31"/><link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"/><link rel="canonical" href="${origin}${pagePath(lang, page)}"/>${['sq','de'].map(language => `<link rel="alternate" hreflang="${language}" href="${origin}${pagePath(language, page)}"/>`).join('')}<meta property="og:title" content="${esc(title)}"/><meta property="og:description" content="${esc(description)}"/><meta property="og:type" content="website"/><meta property="og:url" content="${origin}${pagePath(lang, page)}"/><meta property="og:image" content="${origin}/assets/hero.jpg"/><link rel="stylesheet" href="/assets/site.css"/><link rel="stylesheet" href="/assets/section-09.css"/>${page === 'home' || page === 'contact' ? '<link rel="stylesheet" href="/assets/section-08.css"/>' : ''}<script defer src="/assets/site.js"></script></head><body data-page="${page}">${header(lang, page)}<main id="main">${page === 'home' ? home(lang) : innerPage(lang, page)}</main>${footer(lang, page)}</body></html>`;
+  const robots = legalProfile.approvedForPublicLaunch ? 'index,follow' : 'noindex,nofollow';
+  const sectionStyles = page === 'imprint' || page === 'privacy' ? '<link rel="stylesheet" href="/assets/section-10.css"/>' : '';
+  return `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>${esc(title)}</title><meta name="description" content="${esc(description)}"/><meta name="robots" content="${robots}"/><meta name="theme-color" content="#193e31"/><link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"/><link rel="canonical" href="${origin}${pagePath(lang, page)}"/>${['sq','de'].map(language => `<link rel="alternate" hreflang="${language}" href="${origin}${pagePath(language, page)}"/>`).join('')}<meta property="og:title" content="${esc(title)}"/><meta property="og:description" content="${esc(description)}"/><meta property="og:type" content="website"/><meta property="og:url" content="${origin}${pagePath(lang, page)}"/><meta property="og:image" content="${origin}/assets/hero.jpg"/><link rel="stylesheet" href="/assets/site.css"/><link rel="stylesheet" href="/assets/section-09.css"/>${page === 'home' || page === 'contact' ? '<link rel="stylesheet" href="/assets/section-08.css"/>' : ''}${sectionStyles}<script defer src="/assets/site.js"></script></head><body data-page="${page}">${header(lang, page)}<main id="main">${page === 'home' ? home(lang) : innerPage(lang, page)}</main>${footer(lang, page)}</body></html>`;
 }
 const sitemap = [];
 for (const lang of ['sq', 'de']) {
@@ -133,7 +168,9 @@ for (const lang of ['sq', 'de']) {
   }
 }
 await writeFile(resolve(output, 'index.html'), document('sq', 'home'));
-await writeFile(resolve(output, '404.html'), `<!doctype html><html lang="sq"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>404 · Shpëtimi</title><link rel="stylesheet" href="/assets/site.css"></head><body><main class="page-intro container"><span class="eyebrow">404</span><h1>Faqja nuk u gjet.</h1><p>Seite nicht gefunden.</p><a class="button" href="/sq/">Kthehu në ballinë →</a></main></body></html>`);
+await writeFile(resolve(output, '404.html'), `<!doctype html><html lang="sq"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>404 · Shpëtimi</title><link rel="stylesheet" href="/assets/site.css"></head><body><main class="page-intro container"><span class="eyebrow">404</span><h1>Faqja nuk u gjet.</h1><p>Seite nicht gefunden.</p><a class="button" href="/sq/">Kthehu në ballinë →</a></main></body></html>`);
 await writeFile(resolve(output, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${sitemap.map(url => `<url><loc>${url}</loc></url>`).join('')}</urlset>`);
-await writeFile(resolve(output, 'robots.txt'), `User-agent: *\nDisallow: /\n# Private review version. Enable indexing after legal and community approval.\n`);
+await writeFile(resolve(output, 'robots.txt'), legalProfile.approvedForPublicLaunch
+  ? `User-agent: *\nAllow: /\nSitemap: ${origin}/sitemap.xml\n`
+  : 'User-agent: *\nDisallow: /\n# Private review version. Enable indexing after legal and community approval.\n');
 console.log(`Built ${sitemap.length} bilingual pages, homepage, brand assets, sitemap and 404.`);
