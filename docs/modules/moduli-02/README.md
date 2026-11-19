@@ -29,7 +29,7 @@ Nuk përfshihen në versionin e parë:
 - [Seksioni 03 · Cloudflare Access dhe skeleti i panelit](SEKSIONI-03-CLOUDFLARE-ACCESS-DHE-PANELI.md) — përfunduar
 - [Seksioni 04 · Menaxhimi i njoftimeve](SEKSIONI-04-MENAXHIMI-I-NJOFTIMEVE.md) — përfunduar
 - [Seksioni 05 · Menaxhimi i orarit të xhumasë](SEKSIONI-05-ORARI-I-XHUMASE.md) — përfunduar
-- Seksioni 06 · Integrimi me website-in publik
+- [Seksioni 06 · Integrimi me website-in publik](SEKSIONI-06-INTEGRIMI-PUBLIK.md) — përfunduar
 - Seksioni 07 · Audit log, validimi dhe forcimi i sigurisë
 - Seksioni 08 · Kontrolli përfundimtar teknik dhe dokumentimi
 
