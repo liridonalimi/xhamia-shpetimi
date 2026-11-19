@@ -298,11 +298,54 @@
     fieldset.disabled = false;
   }
 
+  function initializeAuditLog() {
+    const list = document.querySelector('[data-audit-entries]');
+    if (!list) return;
+    const refresh = document.querySelector('[data-audit-refresh]');
+    const status = document.querySelector('[data-audit-status]');
+    const date = new Intl.DateTimeFormat('sq-AL', {
+      dateStyle: 'medium', timeStyle: 'short', timeZone: 'Europe/Berlin',
+    });
+    const actions = { create: 'Krijim', update: 'Përditësim', publish: 'Publikim', archive: 'Arkivim' };
+    const entities = { announcement: 'Njoftim', prayer_override: 'Orar', site_setting: 'Cilësim' };
+
+    async function load() {
+      refresh.disabled = true;
+      status.textContent = 'Duke ngarkuar historikun…';
+      try {
+        const { items } = await api('/admin/api/audit-log');
+        list.replaceChildren(...items.map(item => {
+          const row = document.createElement('li');
+          const title = document.createElement('strong');
+          title.textContent = `${actions[item.action] ?? item.action} · ${entities[item.entity_type] ?? item.entity_type}`;
+          const details = document.createElement('span');
+          const reference = item.entity_id === 'jummah_time' ? 'Orari i xhumasë' : item.entity_id;
+          details.textContent = `${date.format(new Date(item.created_at))} · ${item.actor} · ${reference}`;
+          row.append(title, details);
+          return row;
+        }));
+        list.hidden = !items.length;
+        status.textContent = items.length ? `Veprime të shfaqura: ${items.length}` : 'Nuk ka ende veprime.';
+      } catch {
+        list.hidden = true;
+        status.textContent = 'Historiku nuk u ngarkua. Provo ta rifreskosh.';
+      } finally {
+        refresh.disabled = false;
+      }
+    }
+
+    refresh.addEventListener('click', load);
+    load();
+  }
+
   loadSession().then(() => {
     initializeAnnouncements();
+    initializeAuditLog();
     return initializeJummah();
   }).catch(() => {
     const feedback = document.querySelector('[data-jummah-status]');
     if (feedback) feedback.textContent = 'Sesioni nuk u verifikua. Ringarko faqen.';
+    const audit = document.querySelector('[data-audit-status]');
+    if (audit) audit.textContent = 'Sesioni nuk u verifikua. Ringarko faqen.';
   });
 })();

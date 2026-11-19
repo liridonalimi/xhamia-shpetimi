@@ -47,6 +47,10 @@ body[data-session=error] .status-panel strong::before{background:var(--danger)}
 .summary-card p{margin:0;color:var(--muted);font-size:14px;line-height:1.6}
 .module-section{padding:31px;border:1px solid var(--line);border-radius:7px;background:var(--paper)}
 .jummah-panel{margin-top:22px}
+.audit-panel{margin-top:22px}
+.audit-entries{padding:0;list-style:none}
+.audit-entries li{border-top:1px solid var(--line);padding:12px 0;overflow-wrap:anywhere}
+.audit-entries li span{display:block;color:var(--muted);margin-top:4px}
 .jummah-panel form{max-width:420px}
 .module-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;margin-bottom:26px}
 .module-heading h2{margin-bottom:7px;color:var(--deep);font:400 31px/1.2 var(--serif)}
