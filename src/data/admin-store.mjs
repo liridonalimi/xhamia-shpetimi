@@ -87,6 +87,26 @@ export function createAdminStore(db) {
     return db.prepare('SELECT * FROM announcements WHERE id = ?').bind(requiredText(id, 'id', 100)).first();
   }
 
+  async function listAnnouncements({ status, limit = 100 } = {}) {
+    const take = positiveInteger(limit, 'limit', 100);
+    if (status !== undefined && !announcementStatuses.has(status)) {
+      throw new DataValidationError('invalid_status', 'status');
+    }
+    const statement = status
+      ? db.prepare(`
+          SELECT * FROM announcements
+          WHERE status = ?
+          ORDER BY updated_at DESC, id DESC
+          LIMIT ?
+        `).bind(status, take)
+      : db.prepare(`
+          SELECT * FROM announcements
+          ORDER BY updated_at DESC, id DESC
+          LIMIT ?
+        `).bind(take);
+    return rows(await statement.all());
+  }
+
   async function listPublishedAnnouncements({ now, limit = 10 } = {}) {
     const at = currentTimestamp(now);
     const take = positiveInteger(limit, 'limit', 50);
@@ -141,6 +161,46 @@ export function createAdminStore(db) {
     return getAnnouncement(id);
   }
 
+  async function updateAnnouncementDraft(id, input, actor, options = {}) {
+    const announcementId = requiredText(id, 'id', 100);
+    const existing = await getAnnouncement(announcementId);
+    if (!existing) throw new DataValidationError('not_found', 'id');
+    if (existing.status !== 'draft') throw new DataValidationError('not_draft', 'status');
+    const draft = {
+      title_sq: requiredText(input?.title_sq, 'title_sq', 160),
+      title_de: requiredText(input?.title_de, 'title_de', 160),
+      body_sq: requiredText(input?.body_sq, 'body_sq', 10000),
+      body_de: requiredText(input?.body_de, 'body_de', 10000),
+      starts_at: input?.starts_at ? timestamp(input.starts_at, 'starts_at') : null,
+      ends_at: input?.ends_at ? timestamp(input.ends_at, 'ends_at') : null,
+    };
+    if (draft.starts_at && draft.ends_at && draft.ends_at <= draft.starts_at) {
+      throw new DataValidationError('invalid_window', 'ends_at');
+    }
+    const now = currentTimestamp(options.now);
+    const user = actorEmail(actor);
+    await db.batch([
+      db.prepare(`
+        UPDATE announcements
+        SET title_sq = ?, title_de = ?, body_sq = ?, body_de = ?, starts_at = ?, ends_at = ?,
+          updated_at = ?, updated_by = ?
+        WHERE id = ? AND status = 'draft'
+      `).bind(
+        draft.title_sq, draft.title_de, draft.body_sq, draft.body_de,
+        draft.starts_at, draft.ends_at, now, user, announcementId,
+      ),
+      auditStatement(db, {
+        actor: user,
+        action: 'update',
+        entityType: 'announcement',
+        entityId: announcementId,
+        fields: Object.keys(draft),
+        now,
+      }),
+    ]);
+    return getAnnouncement(announcementId);
+  }
+
   async function publishAnnouncement(id, actor, options = {}) {
     const announcementId = requiredText(id, 'id', 100);
     const existing = await getAnnouncement(announcementId);
@@ -162,6 +222,32 @@ export function createAdminStore(db) {
         entityType: 'announcement',
         entityId: announcementId,
         fields: ['status', 'published_at'],
+        now,
+      }),
+    ]);
+    return getAnnouncement(announcementId);
+  }
+
+  async function archiveAnnouncement(id, actor, options = {}) {
+    const announcementId = requiredText(id, 'id', 100);
+    const existing = await getAnnouncement(announcementId);
+    if (!existing) throw new DataValidationError('not_found', 'id');
+    if (existing.status === 'archived') throw new DataValidationError('already_archived', 'status');
+    if (!announcementStatuses.has(existing.status)) throw new DataValidationError('invalid_status', 'status');
+    const now = currentTimestamp(options.now);
+    const user = actorEmail(actor);
+    await db.batch([
+      db.prepare(`
+        UPDATE announcements
+        SET status = 'archived', updated_at = ?, updated_by = ?
+        WHERE id = ? AND status != 'archived'
+      `).bind(now, user, announcementId),
+      auditStatement(db, {
+        actor: user,
+        action: 'archive',
+        entityType: 'announcement',
+        entityId: announcementId,
+        fields: ['status'],
         now,
       }),
     ]);
@@ -290,9 +376,12 @@ export function createAdminStore(db) {
 
   return Object.freeze({
     getAnnouncement,
+    listAnnouncements,
     listPublishedAnnouncements,
     createAnnouncementDraft,
+    updateAnnouncementDraft,
     publishAnnouncement,
+    archiveAnnouncement,
     getPublishedPrayerOverride,
     savePrayerOverrideDraft,
     publishPrayerOverride,

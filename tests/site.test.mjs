@@ -9,6 +9,7 @@ const output = resolve(import.meta.dirname, '../dist');
 const productionOrigin = 'https://xhamia-shpetimi.liridon-halimi.workers.dev';
 test('the admin shell is generated as a private, noindex responsive application', async () => {
   const html = await readFile(resolve(output, 'admin/index.html'), 'utf8');
+  const announcements = await readFile(resolve(output, 'admin/njoftime/index.html'), 'utf8');
   const css = await readFile(resolve(output, 'admin/assets/admin.css'), 'utf8');
   const script = await readFile(resolve(output, 'admin/assets/admin.js'), 'utf8');
   assert.ok(html.includes('<html lang="sq">'));
@@ -19,7 +20,15 @@ test('the admin shell is generated as a private, noindex responsive application'
   assert.ok(html.includes('data-session-email'));
   assert.ok(html.includes('data-database-status'));
   assert.match(css, /@media\(max-width:680px\)/);
-  assert.ok(script.includes("fetch('/admin/api/session'"));
+  assert.ok(script.includes("api('/admin/api/session'"));
+  assert.ok(html.includes('href="/admin/njoftime/"'));
+  assert.ok(announcements.includes('data-announcement-form'));
+  assert.ok(announcements.includes('data-status-filter'));
+  assert.ok(announcements.includes('name="title_sq"'));
+  assert.ok(announcements.includes('name="title_de"'));
+  assert.ok(announcements.includes('data-publish-announcement'));
+  assert.ok(script.includes("'/admin/api/announcements'"));
+  assert.ok(script.includes('window.confirm'));
   assert.ok(!html.includes('Lorem'));
 });
 
