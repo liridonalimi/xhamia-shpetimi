@@ -31,7 +31,7 @@ Nuk përfshihen në versionin e parë:
 - [Seksioni 05 · Menaxhimi i orarit të xhumasë](SEKSIONI-05-ORARI-I-XHUMASE.md) — përfunduar
 - [Seksioni 06 · Integrimi me website-in publik](SEKSIONI-06-INTEGRIMI-PUBLIK.md) — përfunduar
 - [Seksioni 07 · Audit log, validimi dhe forcimi i sigurisë](SEKSIONI-07-AUDIT-LOG-DHE-VALIDIMI.md) — përfunduar
-- Seksioni 08 · Kontrolli përfundimtar teknik dhe dokumentimi
+- [Seksioni 08 · Kontrolli përfundimtar teknik dhe dokumentimi](SEKSIONI-08-KONTROLLI-PERFUNDIMTAR.md) — përfunduar
 
 ## Rrjedha e punës për çdo seksion
 
