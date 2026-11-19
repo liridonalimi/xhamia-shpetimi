@@ -211,10 +211,38 @@ async function adminAssetResponse(request, env, ctx) {
   return withSecurityHeaders(await env.ASSETS.fetch(request));
 }
 
+async function jummahResponse(request, env, ctx) {
+  const auth = await adminIdentity(request, env, ctx);
+  if (auth.response) return auth.response;
+  const reply = (payload, status = 200, headers = {}) =>
+    json(payload, status, { 'cache-control': 'no-store', ...headers });
+  if (!['GET', 'PUT'].includes(request.method)) {
+    return reply({ error: 'method_not_allowed' }, 405, { allow: 'GET, PUT' });
+  }
+  if (request.method === 'PUT' && !mutationOriginAllowed(request)) {
+    return reply({ error: 'invalid_origin' }, 403);
+  }
+  try {
+    const store = createAdminStore(env.DB);
+    if (request.method === 'GET') {
+      return reply({ time: await store.getSiteSetting('jummah_time') ?? '12:00' });
+    }
+    const { time } = (await jsonBody(request)) ?? {};
+    if (typeof time !== 'string' || !/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) {
+      return reply({ error: 'invalid_time' }, 400);
+    }
+    await store.setSiteSetting('jummah_time', time, auth.identity.email);
+    return reply({ time });
+  } catch (error) {
+    return dataErrorResponse(error) ?? reply({ error: 'database_error' }, 500);
+  }
+}
+
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     if (url.pathname === '/admin/api/session') return adminSessionResponse(request, env, ctx);
+    if (url.pathname === '/admin/api/jummah') return jummahResponse(request, env, ctx);
     if (url.pathname === '/admin/api/announcements' || url.pathname.startsWith('/admin/api/announcements/')) {
       return adminAnnouncementsResponse(request, env, ctx);
     }
