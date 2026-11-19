@@ -1,4 +1,5 @@
 import { SECURITY_HEADERS } from './security.mjs';
+import { AccessAuthError, requireAccessIdentity } from './access-auth.mjs';
 export { SECURITY_HEADERS } from './security.mjs';
 
 export const PRAYER_CONFIG = Object.freeze({
@@ -75,9 +76,63 @@ export async function prayerTimesResponse(request) {
   }
 }
 
+async function adminIdentity(request, env, ctx) {
+  try {
+    return { identity: await requireAccessIdentity(request, env, ctx) };
+  } catch (error) {
+    if (!(error instanceof AccessAuthError)) throw error;
+    return {
+      response: json({ error: 'access_required' }, 403, { 'cache-control': 'no-store' }),
+    };
+  }
+}
+
+async function adminSessionResponse(request, env, ctx) {
+  if (request.method !== 'GET') {
+    return json({ error: 'method_not_allowed' }, 405, { allow: 'GET', 'cache-control': 'no-store' });
+  }
+  const auth = await adminIdentity(request, env, ctx);
+  if (auth.response) return auth.response;
+
+  let database = 'unavailable';
+  try {
+    const result = await env.DB.prepare('SELECT 1 AS ready').first();
+    if (result?.ready === 1) database = 'ready';
+  } catch {
+    database = 'unavailable';
+  }
+  return json({
+    user: auth.identity,
+    environment: env.APP_ENV === 'production' ? 'production' : 'preview',
+    database,
+  }, 200, { 'cache-control': 'no-store' });
+}
+
+async function adminAssetResponse(request, env, ctx) {
+  const auth = await adminIdentity(request, env, ctx);
+  if (auth.response) {
+    return withSecurityHeaders(new Response('Access required', {
+      status: 403,
+      headers: { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store' },
+    }));
+  }
+  const url = new URL(request.url);
+  if (url.pathname === '/admin') return withSecurityHeaders(Response.redirect(new URL('/admin/', url), 308));
+  return withSecurityHeaders(await env.ASSETS.fetch(request));
+}
+
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
+    if (url.pathname === '/admin/api/session') return adminSessionResponse(request, env, ctx);
+    if (url.pathname === '/admin' || url.pathname.startsWith('/admin/')) {
+      if (url.pathname.startsWith('/admin/api/')) {
+        const auth = await adminIdentity(request, env, ctx);
+        if (auth.response) return auth.response;
+        return json({ error: 'not_found' }, 404, { 'cache-control': 'no-store' });
+      }
+      return adminAssetResponse(request, env, ctx);
+    }
     if (url.pathname === '/api/prayer-times') {
       if (request.method !== 'GET') return json({ error: 'method_not_allowed' }, 405, { allow: 'GET', 'cache-control': 'no-store' });
       return prayerTimesResponse(request);
