@@ -1,0 +1,13 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "xhamia-shpetimi-preview-migrations",
+  "compatibility_date": "2026-11-19",
+  "d1_databases": [
+    {
+      "binding": "PREVIEW_DB",
+      "database_name": "xhamia-shpetimi-preview",
+      "database_id": "6a29d619-5030-4caa-ae47-69c9a19101c7",
+      "migrations_dir": "migrations"
+    }
+  ]
+}

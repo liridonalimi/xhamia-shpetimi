@@ -11,5 +11,21 @@
     "not_found_handling": "404-page",
     "html_handling": "auto-trailing-slash"
   },
-  "previews": {}
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "xhamia-shpetimi-production",
+      "database_id": "b01b4c1f-0530-4477-9393-d59bb2a626dd",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "previews": {
+    "d1_databases": [
+      {
+        "binding": "DB",
+        "database_name": "xhamia-shpetimi-preview",
+        "database_id": "6a29d619-5030-4caa-ae47-69c9a19101c7"
+      }
+    ]
+  }
 }
