@@ -1,5 +1,6 @@
 import { SECURITY_HEADERS } from './security.mjs';
 import { AccessAuthError, requireAccessIdentity } from './access-auth.mjs';
+import { createAdminStore, DataValidationError } from './data/admin-store.mjs';
 export { SECURITY_HEADERS } from './security.mjs';
 
 export const PRAYER_CONFIG = Object.freeze({
@@ -108,6 +109,95 @@ async function adminSessionResponse(request, env, ctx) {
   }, 200, { 'cache-control': 'no-store' });
 }
 
+function dataErrorResponse(error) {
+  if (!(error instanceof DataValidationError)) return null;
+  const status = error.code === 'not_found'
+    ? 404
+    : ['not_draft', 'already_archived'].includes(error.code)
+      ? 409
+      : 400;
+  return json({ error: error.code, field: error.field }, status, { 'cache-control': 'no-store' });
+}
+
+function mutationOriginAllowed(request) {
+  const origin = request.headers.get('origin');
+  return origin === new URL(request.url).origin;
+}
+
+async function jsonBody(request) {
+  if (!request.headers.get('content-type')?.toLowerCase().startsWith('application/json')) {
+    throw new DataValidationError('json_required', 'content_type');
+  }
+  const declaredSize = Number(request.headers.get('content-length') ?? 0);
+  if (declaredSize > 30000) throw new DataValidationError('payload_too_large', 'body');
+  const text = await request.text();
+  if (text.length > 30000) throw new DataValidationError('payload_too_large', 'body');
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new DataValidationError('invalid_json', 'body');
+  }
+}
+
+async function adminAnnouncementsResponse(request, env, ctx) {
+  const auth = await adminIdentity(request, env, ctx);
+  if (auth.response) return auth.response;
+  if (!env.DB) return json({ error: 'database_unavailable' }, 503, { 'cache-control': 'no-store' });
+
+  const url = new URL(request.url);
+  const basePath = '/admin/api/announcements';
+  const suffix = url.pathname.slice(basePath.length);
+  const store = createAdminStore(env.DB);
+
+  try {
+    const parts = suffix.split('/').filter(Boolean).map(part => decodeURIComponent(part));
+    if (parts.length === 0 && request.method === 'GET') {
+      const status = url.searchParams.get('status') || undefined;
+      const items = await store.listAnnouncements({ status, limit: 100 });
+      return json({ items }, 200, { 'cache-control': 'no-store' });
+    }
+
+    if (parts.length === 1 && request.method === 'GET') {
+      const item = await store.getAnnouncement(parts[0]);
+      return item
+        ? json({ item }, 200, { 'cache-control': 'no-store' })
+        : json({ error: 'not_found', field: 'id' }, 404, { 'cache-control': 'no-store' });
+    }
+
+    if (!['POST', 'PUT'].includes(request.method)) {
+      return json({ error: 'method_not_allowed' }, 405, {
+        allow: parts.length === 0 ? 'GET, POST' : parts.length === 1 ? 'GET, PUT' : 'POST',
+        'cache-control': 'no-store',
+      });
+    }
+    if (!mutationOriginAllowed(request)) {
+      return json({ error: 'invalid_origin' }, 403, { 'cache-control': 'no-store' });
+    }
+
+    if (parts.length === 0 && request.method === 'POST') {
+      const item = await store.createAnnouncementDraft(await jsonBody(request), auth.identity.email);
+      return json({ item }, 201, { 'cache-control': 'no-store' });
+    }
+    if (parts.length === 1 && request.method === 'PUT') {
+      const item = await store.updateAnnouncementDraft(parts[0], await jsonBody(request), auth.identity.email);
+      return json({ item }, 200, { 'cache-control': 'no-store' });
+    }
+    if (parts.length === 2 && request.method === 'POST' && parts[1] === 'publish') {
+      const item = await store.publishAnnouncement(parts[0], auth.identity.email);
+      return json({ item }, 200, { 'cache-control': 'no-store' });
+    }
+    if (parts.length === 2 && request.method === 'POST' && parts[1] === 'archive') {
+      const item = await store.archiveAnnouncement(parts[0], auth.identity.email);
+      return json({ item }, 200, { 'cache-control': 'no-store' });
+    }
+    return json({ error: 'not_found' }, 404, { 'cache-control': 'no-store' });
+  } catch (error) {
+    const validationResponse = dataErrorResponse(error);
+    if (validationResponse) return validationResponse;
+    return json({ error: 'database_error' }, 500, { 'cache-control': 'no-store' });
+  }
+}
+
 async function adminAssetResponse(request, env, ctx) {
   const auth = await adminIdentity(request, env, ctx);
   if (auth.response) {
@@ -125,6 +215,9 @@ export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
     if (url.pathname === '/admin/api/session') return adminSessionResponse(request, env, ctx);
+    if (url.pathname === '/admin/api/announcements' || url.pathname.startsWith('/admin/api/announcements/')) {
+      return adminAnnouncementsResponse(request, env, ctx);
+    }
     if (url.pathname === '/admin' || url.pathname.startsWith('/admin/')) {
       if (url.pathname.startsWith('/admin/api/')) {
         const auth = await adminIdentity(request, env, ctx);

@@ -156,6 +156,52 @@ test('announcement publication windows and validation are enforced', async t => 
   assert.equal((await store.listPublishedAnnouncements({ now: '2026-11-20T08:00:00.000Z' })).length, 1);
 });
 
+test('announcement drafts can be listed and updated while published items are immutable', async t => {
+  const { database, store } = await testDatabase();
+  t.after(() => database.close());
+
+  await store.createAnnouncementDraft({
+    title_sq: 'Titulli fillestar', title_de: 'Erster Titel',
+    body_sq: 'Teksti fillestar', body_de: 'Erster Text',
+  }, admin, { id: 'editable', now });
+  const updated = await store.updateAnnouncementDraft('editable', {
+    title_sq: 'Titulli i ri', title_de: 'Neuer Titel',
+    body_sq: 'Teksti i ri', body_de: 'Neuer Text',
+    starts_at: '2026-11-20T08:00:00.000Z', ends_at: '2026-11-21T08:00:00.000Z',
+  }, admin, { now: '2026-11-19T08:02:00.000Z' });
+  assert.equal(updated.title_sq, 'Titulli i ri');
+  assert.equal(updated.updated_at, '2026-11-19T08:02:00.000Z');
+  assert.equal((await store.listAnnouncements({ status: 'draft' })).length, 1);
+
+  await store.publishAnnouncement('editable', admin, { now: '2026-11-19T08:03:00.000Z' });
+  await assert.rejects(
+    store.updateAnnouncementDraft('editable', {
+      title_sq: 'Jo', title_de: 'Nein', body_sq: 'Jo', body_de: 'Nein',
+    }, admin, { now: '2026-11-19T08:04:00.000Z' }),
+    error => error instanceof DataValidationError && error.code === 'not_draft',
+  );
+  assert.equal((await store.listAnnouncements({ status: 'published' })).length, 1);
+  const audit = await store.listAuditLog();
+  assert.deepEqual(audit.map(row => row.action), ['publish', 'update', 'create']);
+});
+
+test('draft and published announcements can be archived but never archived twice', async t => {
+  const { database, store } = await testDatabase();
+  t.after(() => database.close());
+
+  await store.createAnnouncementDraft({
+    title_sq: 'Arkiv', title_de: 'Archiv', body_sq: 'SQ', body_de: 'DE',
+  }, admin, { id: 'archive-me', now });
+  const archived = await store.archiveAnnouncement('archive-me', admin, { now: '2026-11-19T08:05:00.000Z' });
+  assert.equal(archived.status, 'archived');
+  assert.equal((await store.listAnnouncements({ status: 'archived' })).length, 1);
+  await assert.rejects(
+    store.archiveAnnouncement('archive-me', admin, { now: '2026-11-19T08:06:00.000Z' }),
+    error => error instanceof DataValidationError && error.code === 'already_archived',
+  );
+  assert.deepEqual(await store.listPublishedAnnouncements({ now: '2026-11-19T08:07:00.000Z' }), []);
+});
+
 test('prayer overrides require valid approved times and remain private as drafts', async t => {
   const { database, store } = await testDatabase();
   t.after(() => database.close());
