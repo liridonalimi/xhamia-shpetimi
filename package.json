@@ -11,7 +11,7 @@
     "dev": "wrangler dev --config ./wrangler.jsonc",
     "dev:static": "node src/serve.mjs",
     "test": "node --test tests/*.test.mjs",
-    "lint": "node --check src/build.mjs && node --check src/content.mjs && node --check src/data/admin-store.mjs && node --check src/security.mjs && node --check src/serve.mjs && node --check src/worker.mjs && node --check dist/assets/site.js",
+    "lint": "node --check src/access-auth.mjs && node --check src/admin/admin.js && node --check src/build.mjs && node --check src/content.mjs && node --check src/data/admin-store.mjs && node --check src/security.mjs && node --check src/serve.mjs && node --check src/worker.mjs && node --check dist/admin/assets/admin.js && node --check dist/assets/site.js",
     "deploy": "wrangler deploy --config ./wrangler.jsonc",
     "preview": "wrangler preview --config ./wrangler.jsonc"
   },
@@ -20,5 +20,8 @@
   },
   "devDependencies": {
     "wrangler": "^4.163.0"
+  },
+  "dependencies": {
+    "jose": "^6.2.18"
   }
 }

@@ -7,6 +7,51 @@ import worker, { PRAYER_CONFIG, SECURITY_HEADERS } from '../src/worker.mjs';
 
 const output = resolve(import.meta.dirname, '../dist');
 const productionOrigin = 'https://xhamia-shpetimi.liridon-halimi.workers.dev';
+test('the admin shell is generated as a private, noindex responsive application', async () => {
+  const html = await readFile(resolve(output, 'admin/index.html'), 'utf8');
+  const css = await readFile(resolve(output, 'admin/assets/admin.css'), 'utf8');
+  const script = await readFile(resolve(output, 'admin/assets/admin.js'), 'utf8');
+  assert.ok(html.includes('<html lang="sq">'));
+  assert.ok(html.includes('name="robots" content="noindex,nofollow,noarchive"'));
+  assert.ok(html.includes('<main class="admin-main" id="admin-main">'));
+  assert.ok(html.includes('href="/admin/assets/admin.css"'));
+  assert.ok(html.includes('src="/admin/assets/admin.js"'));
+  assert.ok(html.includes('data-session-email'));
+  assert.ok(html.includes('data-database-status'));
+  assert.match(css, /@media\(max-width:680px\)/);
+  assert.ok(script.includes("fetch('/admin/api/session'"));
+  assert.ok(!html.includes('Lorem'));
+});
+
+test('admin routes fail closed and authenticated sessions expose only safe identity state', async () => {
+  let assetRequests = 0;
+  const env = {
+    APP_ENV: 'preview',
+    DB: { prepare: () => ({ first: async () => ({ ready: 1 }) }) },
+    ASSETS: { fetch: async () => { assetRequests += 1; return new Response('<h1>Admin</h1>', { headers: { etag: 'admin' } }); } },
+  };
+  const denied = await worker.fetch(new Request('https://example.test/admin/'), env, {});
+  assert.equal(denied.status, 403);
+  assert.equal(assetRequests, 0);
+  assert.equal(denied.headers.get('cache-control'), 'no-store');
+
+  const ctx = { access: { getIdentity: async () => ({ email: 'Admin@Example.test', sub: 'user-1' }) } };
+  const session = await worker.fetch(new Request('https://example.test/admin/api/session'), env, ctx);
+  assert.equal(session.status, 200);
+  assert.equal(session.headers.get('cache-control'), 'no-store');
+  assert.deepEqual(await session.json(), {
+    user: { email: 'admin@example.test', subject: 'user-1' },
+    environment: 'preview',
+    database: 'ready',
+  });
+
+  const asset = await worker.fetch(new Request('https://example.test/admin/'), env, ctx);
+  assert.equal(asset.status, 200);
+  assert.equal(assetRequests, 1);
+  assert.equal(asset.headers.get('etag'), 'admin');
+  for (const [name, value] of Object.entries(SECURITY_HEADERS)) assert.equal(asset.headers.get(name), value);
+});
+
 test('every public route has its language, metadata, main landmark and matching language switch', async () => {
   for (const lang of ['sq', 'de']) for (const page of Object.keys(paths[lang])) {
     const html = await readFile(resolve(output, `.${pagePath(lang, page)}`, 'index.html'), 'utf8');

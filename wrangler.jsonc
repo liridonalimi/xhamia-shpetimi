@@ -7,9 +7,14 @@
   "assets": {
     "directory": "./dist",
     "binding": "ASSETS",
-    "run_worker_first": ["/api/*"],
+    "run_worker_first": ["/api/*", "/admin", "/admin/*"],
     "not_found_handling": "404-page",
     "html_handling": "auto-trailing-slash"
+  },
+  "vars": {
+    "APP_ENV": "production",
+    "ACCESS_TEAM_DOMAIN": "https://shrill-hill-307c.cloudflareaccess.com",
+    "ACCESS_POLICY_AUD": "70289503e4ca9ab31356f62da5380c60c6d08e0844dc24a01e39114c88c40e5f"
   },
   "d1_databases": [
     {
@@ -20,6 +25,11 @@
     }
   ],
   "previews": {
+    "vars": {
+      "APP_ENV": "preview",
+      "ACCESS_TEAM_DOMAIN": "https://shrill-hill-307c.cloudflareaccess.com",
+      "ACCESS_POLICY_AUD": "70289503e4ca9ab31356f62da5380c60c6d08e0844dc24a01e39114c88c40e5f"
+    },
     "d1_databases": [
       {
         "binding": "DB",
