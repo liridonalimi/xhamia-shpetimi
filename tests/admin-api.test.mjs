@@ -76,6 +76,30 @@ const draft = {
   ends_at: null,
 };
 
+test('public updates expose only active published content in the selected language', async t => {
+  const { database, env } = await fixture();
+  t.after(() => database.close());
+  const { createAdminStore } = await import('../src/data/admin-store.mjs');
+  const store = createAdminStore(env.DB);
+  const actor = 'admin@example.test';
+  const active = await store.createAnnouncementDraft(draft, actor);
+  await store.publishAnnouncement(active.id, actor);
+  await store.createAnnouncementDraft({ ...draft, title_sq: 'Private draft' }, actor);
+  const expired = await store.createAnnouncementDraft({ ...draft, ends_at: '2000-01-01T00:00:00.000Z' }, actor);
+  await store.publishAnnouncement(expired.id, actor);
+  await store.setSiteSetting('jummah_time', '12:30', actor);
+  for (const lang of ['sq', 'de']) {
+    const response = await worker.fetch(request(`/api/public-updates?lang=${lang}`), env, {});
+    assert.equal(response.headers.get('cache-control'), 'no-store');
+    assert.deepEqual(await response.json(), {
+      jummah: '12:30',
+      announcements: [{ title: draft[`title_${lang}`], body: draft[`body_${lang}`] }],
+    });
+  }
+  const unavailable = await worker.fetch(request('/api/public-updates?lang=sq'), {}, {});
+  assert.equal(unavailable.status, 503);
+});
+
 test('jummah uses the weekly default and persists only valid authorized edits', async t => {
   const { database, env, ctx } = await fixture();
   t.after(() => database.close());

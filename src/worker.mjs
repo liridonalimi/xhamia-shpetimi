@@ -241,6 +241,7 @@ async function jummahResponse(request, env, ctx) {
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
+    if (url.pathname === '/api/public-updates') return publicUpdates(request, env, url);
     if (url.pathname === '/admin/api/session') return adminSessionResponse(request, env, ctx);
     if (url.pathname === '/admin/api/jummah') return jummahResponse(request, env, ctx);
     if (url.pathname === '/admin/api/announcements' || url.pathname.startsWith('/admin/api/announcements/')) {
@@ -261,3 +262,28 @@ export default {
     return withSecurityHeaders(await env.ASSETS.fetch(request));
   },
 };
+
+async function publicUpdates(request, env, url) {
+  const headers = { 'cache-control': 'no-store' };
+  if (request.method !== 'GET') {
+    return json({ error: 'method_not_allowed' }, 405, { ...headers, allow: 'GET' });
+  }
+  const lang = url.searchParams.get('lang');
+  if (lang !== 'sq' && lang !== 'de') return json({ error: 'invalid_language' }, 400, headers);
+  try {
+    const store = createAdminStore(env.DB);
+    const [jummah, announcements] = await Promise.allSettled([
+      store.getSiteSetting('jummah_time'),
+      store.listPublishedAnnouncements(),
+    ]);
+    const time = jummah.status === 'fulfilled' ? jummah.value ?? '12:00' : null;
+    return json({
+      jummah: typeof time === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(time) ? time : null,
+      announcements: announcements.status === 'fulfilled'
+        ? announcements.value.map(row => ({ title: row[`title_${lang}`], body: row[`body_${lang}`] }))
+        : [],
+    }, 200, headers);
+  } catch {
+    return json({ error: 'updates_unavailable' }, 503, headers);
+  }
+}
