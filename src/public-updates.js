@@ -17,7 +17,7 @@
     const list = notices.querySelector('[data-notices-list]');
     for (const { title, body } of announcements) {
       const card = document.createElement('article');
-      card.className = 'community-card';
+      card.className = 'public-notice';
       const heading = document.createElement('h3');
       heading.textContent = title;
       card.append(heading);

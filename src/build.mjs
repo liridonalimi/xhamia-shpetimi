@@ -95,6 +95,7 @@ function home(lang) {
   const t = copy[lang];
   return `<section class="hero"><div class="hero-copy"><span class="eyebrow">${t.eyebrow}</span><h1>${t.headline}<br><em>${t.headlineEm}</em></h1><p>${t.intro}</p><div class="hero-actions">${button(pagePath(lang, 'prayer'), t.prayerCta)}${button(pagePath(lang, 'contact'), t.visitCta, true)}</div><a class="hero-location" href="${mosque.directions}" target="_blank" rel="noopener noreferrer" aria-label="${esc(t.directions)}: ${esc(mosque.street)}, ${esc(mosque.postalCode)} ${esc(mosque.city)}">${icon('pin')}<span>${esc(mosque.street)} · ${esc(mosque.city)}</span></a></div><figure class="hero-art"><img src="/assets/hero.jpg" srcset="/assets/hero-640.jpg 640w, /assets/hero.jpg 1024w" sizes="(max-width: 600px) 100vw, 50vw" alt="${t.artAlt}" width="1024" height="1536" fetchpriority="high" decoding="async"/><figcaption>${t.artCaption}</figcaption></figure></section>
   ${prayers(lang)}
+  ${homepageNotices(lang)}
   <section class="community-section container" aria-labelledby="community-heading-${lang}"><div class="section-heading"><span class="eyebrow">${t.communityEyebrow}</span><h2 id="community-heading-${lang}">${t.communityTitle}</h2><p>${t.communityIntro}</p></div>${communityCards(lang)}</section>
   <section class="about-section container" aria-labelledby="about-heading-${lang}"><div class="about-art" aria-hidden="true"><div class="about-symbol"><img src="/assets/brand-mark.svg" alt="" width="130" height="156"/><span>Shpëtimi</span></div><span class="about-art-caption">${t.values.join(' · ')}</span></div><div class="about-copy"><span class="eyebrow">${t.aboutEyebrow}</span><h2 id="about-heading-${lang}">${t.aboutTitle.replace('\n', '<br>')}</h2><p>${t.aboutText}</p><div class="about-association"><span>${lang === 'sq' ? 'Shoqata' : 'Verein'}</span><strong>${esc(mosque.association)}</strong></div>${aboutValues(lang)}<a class="text-link about-link" href="${pagePath(lang, 'about')}">${t.aboutMore}${icon('arrow')}</a></div></section>
   <section class="news-section container" aria-labelledby="news-heading-${lang}"><div class="news-copy"><span class="eyebrow">${t.newsEyebrow}</span><h2 id="news-heading-${lang}">${t.newsTitle}</h2><p>${t.newsText}</p><ul class="news-topics" aria-label="${lang === 'sq' ? 'Përmbajtja në Facebook' : 'Inhalte auf Facebook'}">${t.newsTopics.map(topic => `<li>${icon('check')}${topic}</li>`).join('')}</ul>${button(mosque.facebook, t.facebookCta, true, 'external', true)}<p class="news-external-note">${icon('external')}${t.facebookPrivacy}</p></div><a class="facebook-panel" href="${mosque.facebook}" target="_blank" rel="noopener noreferrer" aria-label="${esc(t.facebookCta)} · Xhamia e Tuttlingenit"><div class="facebook-panel-top"><div class="facebook-icon">${icon('facebook')}</div><span class="facebook-official">${t.facebookOfficial}</span></div><span class="eyebrow">Facebook</span><h3>Xhamia e Tuttlingenit</h3><p>${t.facebookNote}</p><span class="facebook-handle">@XhamiaeTuttlingenit</span><span class="facebook-panel-action">${t.facebookCta}${icon('external')}</span></a></section>
@@ -157,10 +158,13 @@ function publicUpdatesMarkup(lang, page) {
   return `<section class="page-intro container" data-public-jummah aria-labelledby="jummah-public-heading" hidden>
     <h2 id="jummah-public-heading">${sq ? 'Namazi i xhumasë' : 'Freitagsgebet'}</h2>
     <p>${sq ? 'Çdo të premte, ora lokale e Tuttlingenit' : 'Jeden Freitag, Ortszeit Tuttlingen'}: <strong><time></time></strong></p>
-  </section>${page === 'home' ? `<section class="container community-section" data-public-announcements aria-labelledby="public-notices-heading" hidden>
-    <div class="section-heading"><h2 id="public-notices-heading">${sq ? 'Njoftime nga xhamia' : 'Mitteilungen der Moschee'}</h2></div>
-    <div class="community-grid" data-notices-list></div>
-  </section>` : ''}`;
+  </section>`;
+}
+function homepageNotices(lang) {
+  return `<section class="container public-notices" id="notices" data-public-announcements aria-labelledby="public-notices-heading" hidden>
+    <h2 id="public-notices-heading">${lang === 'sq' ? 'Njoftime nga xhamia' : 'Mitteilungen der Moschee'}</h2>
+    <div class="public-notices-list" data-notices-list></div>
+  </section>`;
 }
 function document(lang, page) {
   const t = copy[lang];
