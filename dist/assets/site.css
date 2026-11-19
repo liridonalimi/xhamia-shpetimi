@@ -36,3 +36,5 @@
 .public-notice h3{margin:0 0 .5rem;font-size:clamp(1.25rem,2.5vw,1.65rem)}
 .public-notice p{margin:0;max-width:75ch;font-size:1rem;line-height:1.6}
 .public-notice p+p{margin-top:.5rem}
+.prayer-jummah{margin:1.25rem 0 0;text-align:center;color:#e2e2d3;font-size:1rem;line-height:1.6}
+.prayer-jummah time{color:#dec99c;white-space:nowrap}

@@ -151,7 +151,7 @@ export const copy = {
     prayerTitle: 'Kohët e namazit', timetable: 'Orari i plotë', prayerPending: 'Orari nuk mund të ngarkohet për momentin.',
     prayerLoading: 'Duke ngarkuar kohët e namazit…', prayerStatus: 'Kohë të llogaritura · MWL Hanafi', prayerContact: 'Pyet për orarin me xhemat',
     prayerMethod: 'Burimi: AlAdhan · Muslim World League · Hanafi',
-    prayerDisclaimer: 'Kohët e hyrjes janë të llogaritura. Për faljen me xhemat dhe xhumanë, kontaktoni xhaminë.',
+    prayerDisclaimer: 'Kohët ditore të hyrjes janë të llogaritura. Për faljet ditore me xhemat, kontaktoni xhaminë.',
     prayerHelp: 'Për kohët e namazit me xhemat dhe namazin e xhumasë, kontaktoni xhaminë.',
     prayers: ['Sabahu', 'Dreka', 'Ikindia', 'Akshami', 'Jacia'],
     communityEyebrow: 'Besim. Dije. Bashkim.', communityTitle: 'Një vend për të gjithë.',
@@ -202,7 +202,6 @@ export const copy = {
     },
     prayerSections: [
       ['Orari i namazit', 'Kohët e hyrjes llogariten nga AlAdhan për koordinatat e xhamisë, me Muslim World League dhe ikindinë Hanafi. Koha e faljes me xhemat konfirmohet veçmas nga xhamia.'],
-      ['Namazi i xhumasë', 'Për kohën aktuale të namazit të xhumasë, ju lutemi kontaktoni xhaminë ose ndiqni njoftimet në Facebook.'],
       ['Ramazani dhe Bajrami', 'Oraret e veçanta dhe njoftimet do të publikohen pasi të konfirmohen nga bashkësia.'],
     ],
     aboutSections: [
@@ -238,7 +237,7 @@ export const copy = {
     prayerTitle: 'Gebetszeiten', timetable: 'Zum Zeitplan', prayerPending: 'Der Gebetsplan kann momentan nicht geladen werden.',
     prayerLoading: 'Gebetszeiten werden geladen…', prayerStatus: 'Berechnete Zeiten · MWL Hanafi', prayerContact: 'Gemeindezeiten erfragen',
     prayerMethod: 'Quelle: AlAdhan · Muslim World League · Hanafi',
-    prayerDisclaimer: 'Die Beginnzeiten sind berechnet. Gemeinde- und Freitagsgebet bitte direkt bei der Moschee erfragen.',
+    prayerDisclaimer: 'Die täglichen Beginnzeiten sind berechnet. Die Zeiten für die täglichen Gebete in Gemeinschaft erfahren Sie bei der Moschee.',
     prayerHelp: 'Für die Gemeindegebetszeiten und das Freitagsgebet kontaktieren Sie bitte die Moschee.',
     prayers: ['Morgengebet', 'Mittagsgebet', 'Nachmittagsgebet', 'Abendgebet', 'Nachtgebet'],
     communityEyebrow: 'Glaube. Wissen. Gemeinschaft.', communityTitle: 'Ein Ort für alle.',
@@ -288,7 +287,6 @@ export const copy = {
     },
     prayerSections: [
       ['Gebetsplan', 'AlAdhan berechnet die Beginnzeiten für die Koordinaten der Moschee nach Muslim World League und hanafitischer Asr-Berechnung. Die Gemeindegebetszeit bestätigt die Moschee separat.'],
-      ['Freitagsgebet', 'Die aktuelle Zeit des Freitagsgebets erfahren Sie direkt bei der Moschee oder über die Facebook-Ankündigungen.'],
       ['Ramadan und Feiertage', 'Besondere Gebetspläne und Ankündigungen werden nach Bestätigung durch die Gemeinde veröffentlicht.'],
     ],
     aboutSections: [

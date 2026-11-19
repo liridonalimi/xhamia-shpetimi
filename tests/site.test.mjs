@@ -281,6 +281,17 @@ test('the calculated prayer schedule is configured and never hard-codes demonstr
   }
 });
 
+test('Jummah appears exactly once inside the prayer section on both homepages and detail pages', async () => {
+  const files = ['index.html', 'sq/index.html', 'de/index.html', 'sq/namazi/index.html', 'de/gebetszeiten/index.html'];
+  for (const file of files) {
+    const html = await readFile(resolve(output, file), 'utf8');
+    const section = html.match(/<section class="prayer-section[\s\S]*?<\/section>/)?.[0] ?? '';
+    assert.equal((html.match(/data-public-jummah/g) ?? []).length, 1, file);
+    assert.match(section, /data-prayer-key="Isha"[\s\S]*data-public-jummah[\s\S]*data-prayer-status/);
+    assert.match(section, file.startsWith('de/') ? /Freitagsgebet/ : /Namazi i xhumasë/);
+  }
+});
+
 test('the Worker proxies a sanitized MWL Hanafi schedule for the mosque coordinates', async () => {
   assert.deepEqual(PRAYER_CONFIG, {
     latitude: 47.9801632,
