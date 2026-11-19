@@ -151,13 +151,25 @@ function innerPage(lang, page) {
   if (page === 'privacy') return `${intro}${privacyPage(lang)}`;
   throw new Error(`Unknown page: ${page}`);
 }
+function publicUpdatesMarkup(lang, page) {
+  if (page !== 'home' && page !== 'prayer') return '';
+  const sq = lang === 'sq';
+  return `<section class="page-intro container" data-public-jummah aria-labelledby="jummah-public-heading" hidden>
+    <h2 id="jummah-public-heading">${sq ? 'Namazi i xhumasë' : 'Freitagsgebet'}</h2>
+    <p>${sq ? 'Çdo të premte, ora lokale e Tuttlingenit' : 'Jeden Freitag, Ortszeit Tuttlingen'}: <strong><time></time></strong></p>
+  </section>${page === 'home' ? `<section class="container community-section" data-public-announcements aria-labelledby="public-notices-heading" hidden>
+    <div class="section-heading"><h2 id="public-notices-heading">${sq ? 'Njoftime nga xhamia' : 'Mitteilungen der Moschee'}</h2></div>
+    <div class="community-grid" data-notices-list></div>
+  </section>` : ''}`;
+}
 function document(lang, page) {
   const t = copy[lang];
+  const updatesScript = ['home', 'prayer'].includes(page) ? '<script defer src="/assets/public-updates.js"></script>' : '';
   const title = page === 'home' ? `${mosque.publicName} · Shpëtimi` : `${t.nav[page]} · Shpëtimi Tuttlingen`;
   const description = page === 'home' ? t.intro : t.pageDescriptions[page];
   const robots = legalProfile.approvedForPublicLaunch ? 'index,follow' : 'noindex,nofollow';
   const sectionStyles = page === 'imprint' || page === 'privacy' ? '<link rel="stylesheet" href="/assets/section-10.css"/>' : '';
-  return `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>${esc(title)}</title><meta name="description" content="${esc(description)}"/><meta name="robots" content="${robots}"/><meta name="theme-color" content="#193e31"/><link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"/><link rel="canonical" href="${origin}${pagePath(lang, page)}"/>${['sq','de'].map(language => `<link rel="alternate" hreflang="${language}" href="${origin}${pagePath(language, page)}"/>`).join('')}<meta property="og:title" content="${esc(title)}"/><meta property="og:description" content="${esc(description)}"/><meta property="og:type" content="website"/><meta property="og:url" content="${origin}${pagePath(lang, page)}"/><meta property="og:image" content="${origin}/assets/hero.jpg"/><link rel="stylesheet" href="/assets/site.css"/><link rel="stylesheet" href="/assets/section-09.css"/>${page === 'home' || page === 'contact' ? '<link rel="stylesheet" href="/assets/section-08.css"/>' : ''}${sectionStyles}<script defer src="/assets/site.js"></script></head><body data-page="${page}">${header(lang, page)}<main id="main">${page === 'home' ? home(lang) : innerPage(lang, page)}</main>${footer(lang, page)}</body></html>`;
+  return `<!doctype html><html lang="${lang}"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/><title>${esc(title)}</title><meta name="description" content="${esc(description)}"/><meta name="robots" content="${robots}"/><meta name="theme-color" content="#193e31"/><link rel="icon" href="/assets/favicon.svg" type="image/svg+xml"/><link rel="canonical" href="${origin}${pagePath(lang, page)}"/>${['sq','de'].map(language => `<link rel="alternate" hreflang="${language}" href="${origin}${pagePath(language, page)}"/>`).join('')}<meta property="og:title" content="${esc(title)}"/><meta property="og:description" content="${esc(description)}"/><meta property="og:type" content="website"/><meta property="og:url" content="${origin}${pagePath(lang, page)}"/><meta property="og:image" content="${origin}/assets/hero.jpg"/><link rel="stylesheet" href="/assets/site.css"/><link rel="stylesheet" href="/assets/section-09.css"/>${page === 'home' || page === 'contact' ? '<link rel="stylesheet" href="/assets/section-08.css"/>' : ''}${sectionStyles}${updatesScript}<script defer src="/assets/site.js"></script></head><body data-page="${page}">${header(lang, page)}<main id="main">${page === 'home' ? home(lang) : innerPage(lang, page)}${publicUpdatesMarkup(lang, page)}</main>${footer(lang, page)}</body></html>`;
 }
 function adminNavigation(page) {
   return `<nav class="admin-nav" aria-label="Navigimi administrativ"><a href="/admin/"${page === 'overview' ? ' aria-current="page"' : ''}>Përmbledhje</a><a href="/admin/njoftime/"${page === 'announcements' ? ' aria-current="page"' : ''}>Njoftime</a><a href="/admin/#xhumaja">Xhumaja</a><span aria-disabled="true">Audit log <small>Së shpejti</small></span></nav>`;
@@ -197,6 +209,7 @@ for (const lang of ['sq', 'de']) {
   }
 }
 await writeFile(resolve(output, 'index.html'), document('sq', 'home'));
+await writeFile(resolve(output, 'assets/public-updates.js'), await readFile(resolve(project, 'src/public-updates.js'), 'utf8'));
 await mkdir(resolve(output, 'admin/assets'), { recursive: true });
 await mkdir(resolve(output, 'admin/njoftime'), { recursive: true });
 await writeFile(resolve(output, 'admin/index.html'), adminDocument('overview'));
