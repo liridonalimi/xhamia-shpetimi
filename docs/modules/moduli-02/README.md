@@ -25,7 +25,7 @@ Nuk përfshihen në versionin e parë:
 ## Seksionet e planifikuara
 
 - [Seksioni 01 · Arkitektura dhe siguria](SEKSIONI-01-ARKITEKTURA-DHE-SIGURIA.md) — projektuar
-- Seksioni 02 · D1, migrimet dhe shtresa e të dhënave
+- [Seksioni 02 · D1, migrimet dhe shtresa e të dhënave](SEKSIONI-02-D1-DHE-SHTRESA-E-TE-DHENAVE.md) — përfunduar
 - Seksioni 03 · Cloudflare Access dhe skeleti i panelit
 - Seksioni 04 · Menaxhimi i njoftimeve
 - Seksioni 05 · Menaxhimi i orareve të miratuara
