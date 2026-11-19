@@ -76,6 +76,46 @@ const draft = {
   ends_at: null,
 };
 
+test('audit log requires identity and returns only read-only event metadata', async t => {
+  const { database, env, ctx } = await fixture();
+  t.after(() => database.close());
+  const path = '/admin/api/audit-log';
+  assert.equal((await worker.fetch(request(path), env, {})).status, 403);
+  assert.equal((await worker.fetch(request(path, { method: 'PUT' }), env, ctx)).status, 405);
+  await worker.fetch(request('/admin/api/jummah', {
+    method: 'PUT',
+    headers: { origin: 'https://example.test', 'content-type': 'application/json' },
+    body: '{"time":"12:30"}',
+  }), env, ctx);
+  const response = await worker.fetch(request(path), env, ctx);
+  assert.equal(response.status, 200);
+  assert.equal(response.headers.get('cache-control'), 'no-store');
+  const { items } = await response.json();
+  assert.equal(items.length, 1);
+  assert.equal(items[0].actor, 'admin@example.test');
+  assert.equal(items[0].entity_id, 'jummah_time');
+  assert.deepEqual(Object.keys(items[0]).sort(), ['action', 'actor', 'created_at', 'entity_id', 'entity_type']);
+});
+
+test('admin JSON validation rejects invalid media types, non-objects and oversized streams', async t => {
+  const { database, env, ctx } = await fixture();
+  t.after(() => database.close());
+  const path = '/admin/api/announcements';
+  for (const [contentType, body, status] of [
+    ['application/json-extra', '{}', 400],
+    ['application/json', '[]', 400],
+    ['application/json', JSON.stringify({ body_sq: 'ë'.repeat(70000) }), 413],
+  ]) {
+    const response = await worker.fetch(request(path, {
+      method: 'POST',
+      headers: { origin: 'https://example.test', 'content-type': contentType },
+      body,
+    }), env, ctx);
+    assert.equal(response.status, status);
+  }
+  assert.equal(database.prepare('SELECT COUNT(*) AS total FROM announcements').get().total, 0);
+});
+
 test('public updates expose only active published content in the selected language', async t => {
   const { database, env } = await fixture();
   t.after(() => database.close());

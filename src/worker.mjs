@@ -15,6 +15,7 @@ export const PRAYER_CONFIG = Object.freeze({
 
 const prayerKeys = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
 const jsonHeaders = { 'content-type': 'application/json; charset=utf-8' };
+const maxAdminBodyBytes = 128 * 1024;
 const json = (body, status = 200, extraHeaders = {}) => new Response(JSON.stringify(body), {
   status,
   headers: { ...SECURITY_HEADERS, ...jsonHeaders, ...extraHeaders },
@@ -113,6 +114,7 @@ function dataErrorResponse(error) {
   if (!(error instanceof DataValidationError)) return null;
   const status = error.code === 'not_found'
     ? 404
+    : error.code === 'payload_too_large' ? 413
     : ['not_draft', 'already_archived'].includes(error.code)
       ? 409
       : 400;
@@ -125,17 +127,57 @@ function mutationOriginAllowed(request) {
 }
 
 async function jsonBody(request) {
-  if (!request.headers.get('content-type')?.toLowerCase().startsWith('application/json')) {
+  const mediaType = request.headers.get('content-type')?.split(';', 1)[0].trim().toLowerCase();
+  if (mediaType !== 'application/json') {
     throw new DataValidationError('json_required', 'content_type');
   }
   const declaredSize = Number(request.headers.get('content-length') ?? 0);
-  if (declaredSize > 30000) throw new DataValidationError('payload_too_large', 'body');
-  const text = await request.text();
-  if (text.length > 30000) throw new DataValidationError('payload_too_large', 'body');
+  if (declaredSize > maxAdminBodyBytes) throw new DataValidationError('payload_too_large', 'body');
+  if (!request.body) throw new DataValidationError('invalid_json', 'body');
+  const reader = request.body.getReader();
+  const decoder = new TextDecoder('utf-8', { fatal: true });
+  let size = 0;
+  let body = '';
   try {
-    return JSON.parse(text);
-  } catch {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      size += value.byteLength;
+      if (size > maxAdminBodyBytes) {
+        await reader.cancel().catch(() => {});
+        throw new DataValidationError('payload_too_large', 'body');
+      }
+      body += decoder.decode(value, { stream: true });
+    }
+    const data = JSON.parse(body + decoder.decode());
+    if (!data || typeof data !== 'object' || Array.isArray(data)) {
+      throw new DataValidationError('invalid_json', 'body');
+    }
+    return data;
+  } catch (error) {
+    if (error instanceof DataValidationError) throw error;
     throw new DataValidationError('invalid_json', 'body');
+  } finally {
+    reader.releaseLock();
+  }
+}
+
+async function adminAuditResponse(request, env, ctx) {
+  const auth = await adminIdentity(request, env, ctx);
+  if (auth.response) return auth.response;
+  const headers = { 'cache-control': 'no-store' };
+  if (request.method !== 'GET') {
+    return json({ error: 'method_not_allowed' }, 405, { ...headers, allow: 'GET' });
+  }
+  try {
+    const store = createAdminStore(env.DB);
+    const rows = await store.listAuditLog();
+    const items = rows.map(({ actor, action, entity_type, entity_id, created_at }) => ({
+      actor, action, entity_type, entity_id, created_at,
+    }));
+    return json({ items }, 200, headers);
+  } catch {
+    return json({ error: 'audit_unavailable' }, 503, headers);
   }
 }
 
@@ -243,6 +285,7 @@ export default {
     const url = new URL(request.url);
     if (url.pathname === '/api/public-updates') return publicUpdates(request, env, url);
     if (url.pathname === '/admin/api/session') return adminSessionResponse(request, env, ctx);
+    if (url.pathname === '/admin/api/audit-log') return adminAuditResponse(request, env, ctx);
     if (url.pathname === '/admin/api/jummah') return jummahResponse(request, env, ctx);
     if (url.pathname === '/admin/api/announcements' || url.pathname.startsWith('/admin/api/announcements/')) {
       return adminAnnouncementsResponse(request, env, ctx);
