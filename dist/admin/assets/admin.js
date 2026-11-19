@@ -262,5 +262,47 @@
     loadAnnouncements().catch(() => showMessage('Lista e njoftimeve nuk u ngarkua.', 'error'));
   }
 
-  loadSession().then(initializeAnnouncements).catch(() => {});
+  async function initializeJummah() {
+    const form = document.querySelector('[data-jummah-form]');
+    if (!form) return;
+    const fieldset = form.querySelector('fieldset');
+    const field = form.elements.time;
+    const feedback = form.querySelector('[data-jummah-status]');
+    const path = '/admin/api/jummah';
+    try {
+      const { time } = await api(path);
+      field.value = time;
+      feedback.textContent = `Orari i ruajtur: ${time}`;
+    } catch {
+      feedback.textContent = 'Orari nuk u ngarkua. Ringarko faqen.';
+      return;
+    }
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+      if (fieldset.disabled) return;
+      const time = field.value;
+      fieldset.disabled = true;
+      try {
+        await api(path, {
+          method: 'PUT',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ time }),
+        });
+        feedback.textContent = `Orari u ruajt: ${time}`;
+      } catch {
+        feedback.textContent = 'Ruajtja nuk u konfirmua. Provo përsëri.';
+      } finally {
+        fieldset.disabled = false;
+      }
+    });
+    fieldset.disabled = false;
+  }
+
+  loadSession().then(() => {
+    initializeAnnouncements();
+    return initializeJummah();
+  }).catch(() => {
+    const feedback = document.querySelector('[data-jummah-status]');
+    if (feedback) feedback.textContent = 'Sesioni nuk u verifikua. Ringarko faqen.';
+  });
 })();

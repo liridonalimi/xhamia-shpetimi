@@ -76,6 +76,27 @@ const draft = {
   ends_at: null,
 };
 
+test('jummah uses the weekly default and persists only valid authorized edits', async t => {
+  const { database, env, ctx } = await fixture();
+  t.after(() => database.close());
+  const path = '/admin/api/jummah';
+  const get = () => worker.fetch(request(path), env, ctx);
+  const put = (time, origin = 'https://example.test') => worker.fetch(request(path, {
+    method: 'PUT',
+    headers: { origin, 'content-type': 'application/json' },
+    body: JSON.stringify({ time }),
+  }), env, ctx);
+  assert.equal((await worker.fetch(request(path), env, {})).status, 403);
+  assert.deepEqual(await (await get()).json(), { time: '12:00' });
+  assert.equal((await put('13:00', 'https://other.example')).status, 403);
+  assert.equal((await put('24:00')).status, 400);
+  assert.equal((await put('12:30')).status, 200);
+  assert.deepEqual(await (await get()).json(), { time: '12:30' });
+  assert.deepEqual(database.prepare('SELECT actor, entity_id FROM audit_log').all().map(row => ({ ...row })), [
+    { actor: 'admin@example.test', entity_id: 'jummah_time' },
+  ]);
+});
+
 test('announcement API requires a verified Access identity', async t => {
   const { database, env } = await fixture();
   t.after(() => database.close());
