@@ -297,6 +297,14 @@
   }
 }
 
+.site-footer {
+  padding-top: var(--section-space, 3rem);
+}
+
+.footer-grid {
+  padding-bottom: var(--section-space-small, 2rem);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .footer-nav-link,
   .footer-contact-link,
