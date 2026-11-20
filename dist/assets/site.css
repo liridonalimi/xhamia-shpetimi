@@ -127,29 +127,26 @@ body[data-page="home"] .public-notices:not([hidden]) + .community-section {
     display: flex;
     visibility: hidden;
     pointer-events: none;
-    opacity: 0;
-    transform: translateY(-.5rem);
-    transition: opacity 180ms ease, transform 180ms ease, visibility 0s 180ms;
+    clip-path: inset(0 0 100% 0);
+    transition: clip-path 240ms cubic-bezier(.2,.7,.3,1), visibility 0s 240ms;
   }
   .navigation.is-open {
     visibility: visible;
     pointer-events: auto;
-    opacity: 1;
-    transform: translateY(0);
+    clip-path: inset(0);
     transition-delay: 0s;
   }
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  #main { animation: page-arrive 240ms ease-out; }
+  #main > :first-child { animation: page-focus 220ms ease-out; }
 }
 
-@keyframes page-arrive {
-  from { opacity: .72; transform: translateY(.4rem); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes page-focus {
+  from { filter: blur(3px); }
+  to { filter: blur(0); }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .navigation { transition: none; transform: none; }
-  .navigation.is-open { transform: none; }
+  .navigation { transition: none; }
 }
