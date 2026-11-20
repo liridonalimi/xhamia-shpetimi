@@ -19,6 +19,18 @@
     document.addEventListener('keydown', event => { if (event.key === 'Escape' && menuButton.getAttribute('aria-expanded') === 'true') { closeMenu(); menuButton.focus(); } });
     navigation.addEventListener('click', event => { if (event.target.closest('a')) closeMenu(); });
     desktop.addEventListener('change', closeMenu);
+    if (document.body.dataset.page === 'home') {
+      const sectionLinks = [...navigation.querySelectorAll('a[href^="#"]')];
+      function markCurrentSection() {
+        const current = sectionLinks.find(link => link.hash === location.hash) ?? sectionLinks[0];
+        for (const link of sectionLinks) {
+          if (link === current) link.setAttribute('aria-current', 'location');
+          else link.removeAttribute('aria-current');
+        }
+      }
+      markCurrentSection();
+      window.addEventListener('hashchange', markCurrentSection);
+    }
   }
   // Use the mosque timezone rather than the visitor's local date.
   const parts = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Berlin', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date());

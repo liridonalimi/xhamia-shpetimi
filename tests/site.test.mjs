@@ -78,9 +78,11 @@ test('every public route has its language, metadata, main landmark and matching 
 test('all internal page and asset links resolve to built files', async () => {
   for (const lang of ['sq', 'de']) for (const page of Object.keys(paths[lang])) {
     const html = await readFile(resolve(output, `.${pagePath(lang, page)}`, 'index.html'), 'utf8');
-    for (const match of html.matchAll(/(?:href|src)="(\/[^"?]*)"/g)) {
-      const path = resolve(output, `.${match[1]}`, match[1].endsWith('/') ? 'index.html' : '');
+    for (const match of html.matchAll(/(?:href|src)="(\/[^"]*)"/g)) {
+      const url = new URL(match[1], productionOrigin);
+      const path = resolve(output, `.${url.pathname}`, url.pathname.endsWith('/') ? 'index.html' : '');
       assert.ok((await stat(path)).isFile(), `missing link ${match[1]} on ${lang}/${page}`);
+      if (url.hash) assert.ok((await readFile(path, 'utf8')).includes(`id="${url.hash.slice(1)}"`));
     }
     for (const match of html.matchAll(/srcset="([^"]+)"/g)) {
       for (const candidate of match[1].split(',')) {
@@ -110,12 +112,17 @@ test('generated markup has unique ids, valid ARIA references and safe interactiv
   }
 });
 
-test('the primary navigation exposes support in both languages', async () => {
+test('primary navigation scrolls to real homepage sections in both languages', async () => {
   for (const lang of ['sq', 'de']) {
     const home = await readFile(resolve(output, `.${pagePath(lang, 'home')}`, 'index.html'), 'utf8');
     const support = await readFile(resolve(output, `.${pagePath(lang, 'support')}`, 'index.html'), 'utf8');
-    assert.ok(home.includes(`class="navigation-cta">${copy[lang].nav.support}</a>`));
-    assert.ok(support.includes(`class="navigation-cta" aria-current="page">${copy[lang].nav.support}</a>`));
+    const nav = home.match(/<nav id="main-navigation"[\s\S]*?<\/nav>/)?.[0] ?? '';
+    const targets = [...nav.matchAll(/href="#([^"]+)"/g)].map(match => match[1]);
+    assert.deepEqual(targets, ['ballina', 'namazi', 'rreth-nesh', 'bashkesia', 'kontakt', 'mbeshtet']);
+    for (const target of targets) {
+      assert.ok(home.includes(`id="${target}" tabindex="-1"`));
+      assert.ok(support.includes(`href="${pagePath(lang)}#${target}"`));
+    }
   }
 });
 
