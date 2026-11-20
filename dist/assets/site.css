@@ -121,3 +121,35 @@ body[data-page="home"] .public-notices:not([hidden]) + .community-section {
   margin-bottom: 1rem;
 }
 .facebook-panel { padding-top: clamp(1.5rem, 3vw, 2.25rem); }
+
+@media (max-width: 1079px) {
+  .navigation {
+    display: flex;
+    visibility: hidden;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(-.5rem);
+    transition: opacity 180ms ease, transform 180ms ease, visibility 0s 180ms;
+  }
+  .navigation.is-open {
+    visibility: visible;
+    pointer-events: auto;
+    opacity: 1;
+    transform: translateY(0);
+    transition-delay: 0s;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  #main { animation: page-arrive 240ms ease-out; }
+}
+
+@keyframes page-arrive {
+  from { opacity: .72; transform: translateY(.4rem); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .navigation { transition: none; transform: none; }
+  .navigation.is-open { transform: none; }
+}

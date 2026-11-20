@@ -4,16 +4,21 @@
   const lang = document.documentElement.lang;
   const locale = lang === 'de' ? 'de-DE' : 'sq-AL';
   if (menuButton && navigation) {
-    function closeMenu() { menuButton.setAttribute('aria-expanded', 'false'); menuButton.setAttribute('aria-label', menuButton.dataset.open); navigation.classList.remove('is-open'); }
-    menuButton.addEventListener('click', () => {
-      const open = menuButton.getAttribute('aria-expanded') !== 'true';
+    const desktop = window.matchMedia('(min-width: 1080px)');
+    function setMenu(open) {
       menuButton.setAttribute('aria-expanded', String(open));
       menuButton.setAttribute('aria-label', open ? menuButton.dataset.close : menuButton.dataset.open);
       navigation.classList.toggle('is-open', open);
+      navigation.inert = !desktop.matches && !open;
+    }
+    const closeMenu = () => setMenu(false);
+    closeMenu();
+    menuButton.addEventListener('click', () => {
+      setMenu(menuButton.getAttribute('aria-expanded') !== 'true');
     });
     document.addEventListener('keydown', event => { if (event.key === 'Escape' && menuButton.getAttribute('aria-expanded') === 'true') { closeMenu(); menuButton.focus(); } });
     navigation.addEventListener('click', event => { if (event.target.closest('a')) closeMenu(); });
-    window.matchMedia('(min-width: 1080px)').addEventListener('change', event => { if (event.matches) closeMenu(); });
+    desktop.addEventListener('change', closeMenu);
   }
   // Use the mosque timezone rather than the visitor's local date.
   const parts = new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Berlin', year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(new Date());
