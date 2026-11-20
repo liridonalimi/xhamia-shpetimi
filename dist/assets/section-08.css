@@ -188,3 +188,6 @@
     transform: none;
   }
 }
+.contact-method small, .maps-privacy { font-size: var(--text-meta); }
+.address-card-action, .visit-confirm { font-size: var(--text-label); }
+.contact-method strong { font-size: var(--text-copy); }

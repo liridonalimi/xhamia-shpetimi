@@ -65,3 +65,46 @@
 @media (min-width: 821px) {
   .hero, .hero-art { min-height: clamp(29rem, 36vw, 32rem); }
 }
+
+/* Readable labels and supporting copy across the public site. */
+:root {
+  --text-meta: .8125rem;
+  --text-label: .875rem;
+  --text-copy: 1rem;
+}
+.topline, .brand-subtitle, .site-footer .brand-subtitle,
+.footer-grid .brand-subtitle, .eyebrow, .hero .eyebrow,
+.hero-art figcaption, .about-art-caption, .about-association > span,
+.facebook-official, .news-external-note {
+  font-size: var(--text-meta);
+}
+.language-switch, .hero-location, .prayer-date, .prayer-date > a,
+.prayer-local, .prayer-note, .prayer-status-copy > span,
+.prayer-status > .text-link, .date-controls > .today-button,
+.text-link, .community-card .text-link, .editorial-row .text-link,
+.about-values-list li > strong, .news-topics li, .facebook-handle,
+.facebook-panel-action, .support-ways li, .breadcrumb,
+.bank-demo-badge, .bank-demo-grid dt, .bank-demo-grid code {
+  font-size: var(--text-label);
+}
+.hero p, .section-heading p, .community-card p, .about-copy p,
+.news-section p:not(.news-external-note), .facebook-panel p,
+.support-inner p, .visit-copy > p, .address-card > p,
+.page-intro > p, .editorial-row p, .about-page-art p,
+.facebook-callout p, .support-info p, .contact-footnote p,
+.legal-section p, .legal-section address, .bank-demo-notice {
+  font-size: var(--text-copy);
+}
+.navigation a {
+  font-size: var(--text-label);
+}
+@media (max-width: 1079px) {
+  .navigation a { font-size: var(--text-copy); }
+}
+@media (max-width: 600px) {
+  .hero-actions { flex-wrap: wrap; }
+  .hero-actions .button, .facebook-callout > .button, .support-info > .button,
+  .prayer-name { font-size: var(--text-label); }
+  .prayer-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: .875rem; }
+  .prayer-item:nth-child(3) { border-right: 0; }
+}
