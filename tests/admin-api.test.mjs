@@ -140,6 +140,25 @@ test('public updates expose only active published content in the selected langua
   assert.equal(unavailable.status, 503);
 });
 
+test('the public notice list can load past its first ten active announcements', async t => {
+  const { database, env } = await fixture();
+  t.after(() => database.close());
+  const { createAdminStore } = await import('../src/data/admin-store.mjs');
+  const store = createAdminStore(env.DB);
+  const actor = 'admin@example.test';
+  for (let index = 0; index < 12; index += 1) {
+    const item = await store.createAnnouncementDraft({ ...draft, title_de: `Mitteilung ${index}` }, actor);
+    await store.publishAnnouncement(item.id, actor, { now: new Date(Date.UTC(2025, 0, 1, 0, index)).toISOString() });
+  }
+  const getPage = async page => (await worker.fetch(request(`/api/public-updates?lang=de&page=${page}`), env, {})).json();
+  const first = await getPage(1);
+  const second = await getPage(2);
+  assert.equal(first.hasMore, true);
+  assert.equal(second.hasMore, false);
+  assert.deepEqual([...first.announcements, ...second.announcements].map(item => item.title),
+    Array.from({ length: 12 }, (_, index) => `Mitteilung ${11 - index}`));
+});
+
 test('jummah uses the weekly default and persists only valid authorized edits', async t => {
   const { database, env, ctx } = await fixture();
   t.after(() => database.close());

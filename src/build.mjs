@@ -143,6 +143,14 @@ function privacyPage(lang) {
 function innerPage(lang, page) {
   const t = copy[lang];
   const intro = pageIntro(lang, page);
+  if (page === 'notices') return `${intro}<section class="container public-notices" data-public-announcements="full" aria-label="${t.nav.notices}">
+    <p role="status" data-notices-status
+      data-empty="${lang === 'sq' ? 'Nuk ka njoftime aktive.' : 'Derzeit gibt es keine aktiven Mitteilungen.'}"
+      data-error="${lang === 'sq' ? 'Njoftimet nuk u ngarkuan. Provo përsëri.' : 'Die Mitteilungen konnten nicht geladen werden. Bitte erneut versuchen.'}"
+      data-loading="${lang === 'sq' ? 'Duke ngarkuar njoftimet…' : 'Mitteilungen werden geladen…'}"></p>
+    <div class="public-notices-list" data-notices-list></div>
+    <button class="button button-outline notices-link" type="button" data-notices-more hidden>${lang === 'sq' ? 'Shfaq më shumë' : 'Mehr anzeigen'}</button>
+  </section>`;
   if (page === 'prayer') return `${intro}${prayers(lang, true)}${editorial(t.prayerSections, lang)}<div class="container inline-cta">${button(`tel:${mosque.phoneHref}`, t.call, false, 'phone')}${button(mosque.facebook, t.facebookCta, true, 'external', true)}</div>`;
   if (page === 'about') return `${intro}<section class="about-page-art container" aria-labelledby="about-page-heading-${lang}"><img src="/assets/hero.jpg" width="1024" height="1536" alt="${t.artAlt}"/><div><span class="eyebrow">Shpëtimi</span><h2 id="about-page-heading-${lang}">${t.aboutTitle.replace('\n', '<br>')}</h2><p>${t.aboutText}</p><div class="about-association"><span>${lang === 'sq' ? 'Shoqata' : 'Verein'}</span><strong>${esc(mosque.association)}</strong></div>${aboutValues(lang)}</div></section>${editorial(t.aboutSections, lang)}${supportBanner(lang)}`;
   if (page === 'community') return `${intro}<section class="container inner-cards" aria-label="${esc(t.communityTitle)}">${communityCards(lang, 'community')}</section>${editorial(t.communitySections, lang, true)}<section class="container facebook-callout"><div>${icon('facebook')}<h2>Xhamia e Tuttlingenit</h2><p>${t.newsText}</p></div>${button(mosque.facebook, t.facebookCta, false, 'external', true)}</section>`;
@@ -164,11 +172,12 @@ function homepageNotices(lang) {
   return `<section class="container public-notices" id="notices" data-public-announcements aria-labelledby="public-notices-heading" hidden>
     <h2 id="public-notices-heading">${lang === 'sq' ? 'Njoftime nga xhamia' : 'Mitteilungen der Moschee'}</h2>
     <div class="public-notices-list" data-notices-list></div>
+    <a class="text-link notices-link" href="${pagePath(lang, 'notices')}">${lang === 'sq' ? 'Të gjitha njoftimet' : 'Alle Mitteilungen'}</a>
   </section>`;
 }
 function document(lang, page) {
   const t = copy[lang];
-  const updatesScript = ['home', 'prayer'].includes(page) ? '<script defer src="/assets/public-updates.js"></script>' : '';
+  const updatesScript = ['home', 'prayer', 'notices'].includes(page) ? '<script defer src="/assets/public-updates.js"></script>' : '';
   const title = page === 'home' ? `${mosque.publicName} · Shpëtimi` : `${t.nav[page]} · Shpëtimi Tuttlingen`;
   const description = page === 'home' ? t.intro : t.pageDescriptions[page];
   const robots = legalProfile.approvedForPublicLaunch ? 'index,follow' : 'noindex,nofollow';
