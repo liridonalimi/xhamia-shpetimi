@@ -316,3 +316,12 @@
     transform: none;
   }
 }
+
+.footer-intro .association, .footer-values li, .footer-nav-link,
+.footer-contact-link strong, .footer-social-link strong {
+  font-size: var(--text-label);
+}
+.footer-label, .footer-contact-link small, .footer-social-link small,
+.footer-social-note, .footer-bottom {
+  font-size: var(--text-meta);
+}
