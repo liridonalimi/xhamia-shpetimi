@@ -256,7 +256,8 @@ test('the global footer exposes complete navigation, contact and legal actions',
     assert.ok(footer.includes(`href="${pagePath(lang, 'imprint')}"`));
     assert.ok(footer.includes(`href="${pagePath(lang, 'privacy')}"`));
     assert.ok(footer.includes(`href="${pagePath(lang === 'sq' ? 'de' : 'sq', page)}" lang=`));
-    assert.equal((footer.match(/class="footer-values"[\s\S]*?<\/ul>/)?.[0].match(/<li>/g) ?? []).length, 3);
+    assert.ok(!footer.includes('footer-values'));
+    assert.ok(!footer.includes('footer-contact-arrow'));
   }
 });
 
@@ -269,8 +270,8 @@ test('the calculated prayer schedule is configured and never hard-codes demonstr
     const html = await readFile(resolve(output, `.${pagePath(lang, page)}`, 'index.html'), 'utf8');
     assert.ok(html.includes(copy[lang].prayerLoading));
     assert.ok(html.includes(copy[lang].prayerStatus));
-    assert.ok(html.includes(copy[lang].prayerContact));
-    assert.ok(html.includes('class="prayer-status"'));
+    assert.ok(!html.includes(copy[lang].prayerContact));
+    assert.ok(html.includes(`class="visually-hidden" id="prayer-status-${lang}-`));
     assert.ok(html.includes('role="status"'));
     assert.ok(html.includes(`aria-describedby="prayer-status-${lang}-${page === 'home' ? 'home' : 'full'}"`));
     assert.equal((html.match(/class="prayer-time"/g) ?? []).length, 5);

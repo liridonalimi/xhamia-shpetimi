@@ -105,6 +105,19 @@
   .hero-actions { flex-wrap: wrap; }
   .hero-actions .button, .facebook-callout > .button, .support-info > .button,
   .prayer-name { font-size: var(--text-label); }
-  .prayer-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: .875rem; }
-  .prayer-item:nth-child(3) { border-right: 0; }
+  .prayer-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .prayer-item { padding-inline: 2px; }
+  .prayer-name, .prayer-local { overflow-wrap: anywhere; }
+  .prayer-time { font-size: clamp(1.1rem, 5.4vw, 1.625rem); white-space: nowrap; }
 }
+
+body[data-page="home"] .public-notices { padding-bottom: 0; }
+body[data-page="home"] .public-notices:not([hidden]) + .community-section {
+  padding-top: clamp(1.25rem, 2vw, 1.75rem);
+}
+.facebook-panel > .facebook-panel-top {
+  position: static;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+.facebook-panel { padding-top: clamp(1.5rem, 3vw, 2.25rem); }

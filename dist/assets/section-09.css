@@ -325,3 +325,24 @@
 .footer-social-note, .footer-bottom {
   font-size: var(--text-meta);
 }
+
+.site-footer .footer-grid { gap: clamp(1.25rem, 4vw, 3.5rem); }
+.site-footer .footer-label { margin-bottom: .5rem; padding-bottom: .5rem; }
+.site-footer .footer-intro .brand { margin-bottom: .5rem; }
+.site-footer .footer-grid nav { gap: 0; }
+.site-footer .footer-nav-link { border-bottom: 0; }
+.site-footer .footer-grid address > .footer-contact-link {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  margin: 0;
+  border-bottom: 0;
+}
+.site-footer .footer-social-link {
+  display: inline-flex;
+  gap: .5rem;
+  margin-top: .25rem;
+  padding: .35rem .5rem;
+  background: transparent;
+  border: 0;
+  min-height: 44px;
+}
