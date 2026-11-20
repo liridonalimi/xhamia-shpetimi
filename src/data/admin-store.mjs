@@ -107,7 +107,7 @@ export function createAdminStore(db) {
     return rows(await statement.all());
   }
 
-  async function listPublishedAnnouncements({ now, limit = 10 } = {}) {
+  async function listPublishedAnnouncements({ now, limit = 10, offset = 0 } = {}) {
     const at = currentTimestamp(now);
     const take = positiveInteger(limit, 'limit', 50);
     const result = await db.prepare(`
@@ -118,8 +118,8 @@ export function createAdminStore(db) {
         AND (starts_at IS NULL OR starts_at <= ?)
         AND (ends_at IS NULL OR ends_at > ?)
       ORDER BY published_at DESC, id DESC
-      LIMIT ?
-    `).bind(at, at, take).all();
+      LIMIT ? OFFSET ?
+    `).bind(at, at, take, offset).all();
     return rows(result);
   }
 

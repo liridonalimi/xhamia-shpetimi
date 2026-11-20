@@ -313,18 +313,27 @@ async function publicUpdates(request, env, url) {
   }
   const lang = url.searchParams.get('lang');
   if (lang !== 'sq' && lang !== 'de') return json({ error: 'invalid_language' }, 400, headers);
+  const pageParam = url.searchParams.get('page');
+  const page = pageParam === null ? 1 : Number(pageParam);
+  if (!Number.isSafeInteger(page) || page < 1 || page > Math.floor(Number.MAX_SAFE_INTEGER / 10)) {
+    return json({ error: 'invalid_page' }, 400, headers);
+  }
   try {
     const store = createAdminStore(env.DB);
     const [jummah, announcements] = await Promise.allSettled([
       store.getSiteSetting('jummah_time'),
-      store.listPublishedAnnouncements(),
+      store.listPublishedAnnouncements({ limit: pageParam === null ? 10 : 11, offset: (page - 1) * 10 }),
     ]);
+    if (pageParam !== null && announcements.status === 'rejected') {
+      return json({ error: 'updates_unavailable' }, 503, headers);
+    }
     const time = jummah.status === 'fulfilled' ? jummah.value ?? '12:00' : null;
     return json({
       jummah: typeof time === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(time) ? time : null,
       announcements: announcements.status === 'fulfilled'
-        ? announcements.value.map(row => ({ title: row[`title_${lang}`], body: row[`body_${lang}`] }))
+        ? announcements.value.slice(0, 10).map(row => ({ title: row[`title_${lang}`], body: row[`body_${lang}`] }))
         : [],
+      ...(pageParam === null ? {} : { hasMore: announcements.value.length > 10 }),
     }, 200, headers);
   } catch {
     return json({ error: 'updates_unavailable' }, 503, headers);

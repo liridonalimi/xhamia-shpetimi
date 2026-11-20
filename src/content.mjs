@@ -127,8 +127,8 @@ export const prayerSchedule = {
 };
 
 export const paths = {
-  sq: { home: '', prayer: 'namazi', about: 'rreth-nesh', community: 'bashkesia', support: 'mbeshtet', contact: 'kontakt', imprint: 'impressum', privacy: 'privatesia' },
-  de: { home: '', prayer: 'gebetszeiten', about: 'ueber-uns', community: 'gemeinde', support: 'unterstuetzen', contact: 'kontakt', imprint: 'impressum', privacy: 'datenschutz' },
+  sq: { home: '', notices: 'njoftimet', prayer: 'namazi', about: 'rreth-nesh', community: 'bashkesia', support: 'mbeshtet', contact: 'kontakt', imprint: 'impressum', privacy: 'privatesia' },
+  de: { home: '', notices: 'mitteilungen', prayer: 'gebetszeiten', about: 'ueber-uns', community: 'gemeinde', support: 'unterstuetzen', contact: 'kontakt', imprint: 'impressum', privacy: 'datenschutz' },
 };
 
 export function pagePath(lang, page = 'home') { return `/${lang}/${paths[lang][page] ? `${paths[lang][page]}/` : ''}`; }
@@ -141,7 +141,7 @@ export function approvedTimes(date) {
 
 export const copy = {
   sq: {
-    nav: { home: 'Ballina', prayer: 'Namazi', about: 'Rreth nesh', community: 'Bashkësia', contact: 'Kontakt', support: 'Mbështet xhaminë', imprint: 'Impressum', privacy: 'Privatësia' },
+    nav: { home: 'Ballina', notices: 'Njoftime', prayer: 'Namazi', about: 'Rreth nesh', community: 'Bashkësia', contact: 'Kontakt', support: 'Mbështet xhaminë', imprint: 'Impressum', privacy: 'Privatësia' },
     skip: 'Kalo te përmbajtja', menu: 'Hap menunë', closeMenu: 'Mbyll menunë',
     welcome: 'Mirë se vini. Selam alejkum.', country: 'Tuttlingen, Gjermani',
     eyebrow: 'Bashkësia shqiptare · Tuttlingen',
@@ -190,8 +190,9 @@ export const copy = {
     footerFacebookNote: 'Facebook hapet vetëm pasi të klikoni. Nuk ngarkojmë feed ose tracker automatik.',
     legalDraft: 'Version për shqyrtim · informacioni ligjor në plotësim',
     artCaption: 'Besim · Dije · Bashkim', artAlt: 'Ilustrim dekorativ: hark me motive gjeometrike shqiptare, hënë dhe peizazh i qetë.',
-    pageTitles: { prayer: 'Namazi dhe orari.', about: 'Rreth bashkësisë sonë.', community: 'Jeta në bashkësi.', support: 'Kontributi juaj ka vlerë.', contact: 'Le të jemi në kontakt.', imprint: 'Impressum', privacy: 'Privatësia' },
+    pageTitles: { notices: 'Njoftime nga xhamia', prayer: 'Namazi dhe orari.', about: 'Rreth bashkësisë sonë.', community: 'Jeta në bashkësi.', support: 'Kontributi juaj ka vlerë.', contact: 'Le të jemi në kontakt.', imprint: 'Impressum', privacy: 'Privatësia' },
     pageDescriptions: {
+      notices: 'Lexoni njoftimet aktuale të Xhamisë Shpëtimi në Tuttlingen.',
       prayer: 'Kohët e hyrjes së namazit llogariten për Tuttlingen me metodën Muslim World League dhe ikindinë Hanafi.',
       about: 'Njihuni me Qendrën Shqiptare Kulturore Islame Shpëtimi e.V. në Tuttlingen.',
       community: 'Informacion, takime dhe lidhje me bashkësinë shqiptare në Tuttlingen.',
@@ -227,7 +228,7 @@ export const copy = {
     today: 'Sot', previous: 'Dita e mëparshme', next: 'Dita e ardhshme', backToday: 'Kthehu te sot',
   },
   de: {
-    nav: { home: 'Startseite', prayer: 'Gebetszeiten', about: 'Über uns', community: 'Gemeinde', contact: 'Kontakt', support: 'Unterstützen', imprint: 'Impressum', privacy: 'Datenschutz' },
+    nav: { home: 'Startseite', notices: 'Mitteilungen', prayer: 'Gebetszeiten', about: 'Über uns', community: 'Gemeinde', contact: 'Kontakt', support: 'Unterstützen', imprint: 'Impressum', privacy: 'Datenschutz' },
     skip: 'Zum Inhalt springen', menu: 'Menü öffnen', closeMenu: 'Menü schließen',
     welcome: 'Herzlich willkommen. Selam alejkum.', country: 'Tuttlingen, Deutschland',
     eyebrow: 'Albanische Gemeinde · Tuttlingen',
@@ -275,8 +276,9 @@ export const copy = {
     footerFacebookNote: 'Facebook öffnet sich erst nach einem Klick. Wir laden keinen Feed und keinen Tracker automatisch.',
     legalDraft: 'Version zur Durchsicht · Rechtliche Angaben in Bearbeitung',
     artCaption: 'Glaube · Wissen · Gemeinschaft', artAlt: 'Dekorative Illustration: Bogen mit albanischen geometrischen Motiven, Mondsichel und ruhiger Landschaft.',
-    pageTitles: { prayer: 'Gebet und Gebetszeiten.', about: 'Über unsere Gemeinde.', community: 'Unser Gemeindeleben.', support: 'Ihr Beitrag zählt.', contact: 'Bleiben wir in Kontakt.', imprint: 'Impressum', privacy: 'Datenschutz' },
+    pageTitles: { notices: 'Mitteilungen der Moschee', prayer: 'Gebet und Gebetszeiten.', about: 'Über unsere Gemeinde.', community: 'Unser Gemeindeleben.', support: 'Ihr Beitrag zählt.', contact: 'Bleiben wir in Kontakt.', imprint: 'Impressum', privacy: 'Datenschutz' },
     pageDescriptions: {
+      notices: 'Lesen Sie die aktuellen Mitteilungen der Shpëtimi-Moschee in Tuttlingen.',
       prayer: 'Die Beginnzeiten werden für Tuttlingen nach Muslim World League und hanafitischer Asr-Berechnung ermittelt.',
       about: 'Lernen Sie die Qendra Shqiptare Kulturore Islame Shpëtimi e.V. in Tuttlingen kennen.',
       community: 'Information, Begegnung und Verbindung mit der albanischen Gemeinde in Tuttlingen.',
