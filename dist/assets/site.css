@@ -40,3 +40,28 @@
 .prayer-jummah time{color:#dec99c;white-space:nowrap}
 .notices-link{margin-block-start:1rem}
 .public-notice h2{margin:0 0 .5rem;font-size:clamp(1.25rem,2.5vw,1.65rem)}
+
+/* Shared vertical rhythm for public pages. Keep type and tap targets intact. */
+:root {
+  --section-space: clamp(1.75rem, 4vw, 3.25rem);
+  --section-space-small: clamp(1rem, 2.5vw, 2rem);
+}
+.hero-copy { padding-block: clamp(1.75rem, 4vw, 3.25rem); }
+.hero h1 { margin-block: 1rem; }
+.hero-actions, .hero-location { margin-top: 1.25rem; }
+.prayer-section { padding-block: var(--section-space-small); }
+.community-section, .news-section, .visit-section { padding-block: var(--section-space); }
+.about-section { padding-bottom: var(--section-space); }
+.support-banner, .public-notices { padding-block: var(--section-space-small); }
+.section-heading { margin-bottom: clamp(1.25rem, 2.5vw, 1.75rem); }
+.community-card, .public-notice { padding-block: clamp(1rem, 2.2vw, 1.5rem); }
+.community-card .card-icon { margin-bottom: .875rem; }
+.community-card p { margin-bottom: 1rem; }
+.page-intro { padding-block: var(--section-space-small) var(--section-space); }
+.editorial { padding-block: var(--section-space-small); }
+.editorial-row { padding-block: clamp(1.125rem, 2.6vw, 1.625rem); }
+.legal-section { padding-bottom: var(--section-space); }
+
+@media (min-width: 821px) {
+  .hero, .hero-art { min-height: clamp(29rem, 36vw, 32rem); }
+}
