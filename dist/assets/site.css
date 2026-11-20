@@ -139,13 +139,11 @@ body[data-page="home"] .public-notices:not([hidden]) + .community-section {
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  #main > :first-child { animation: page-focus 220ms ease-out; }
+  html:has(body[data-page="home"]) { scroll-behavior: smooth; }
 }
 
-@keyframes page-focus {
-  from { filter: blur(3px); }
-  to { filter: blur(0); }
-}
+body[data-page="home"] #main > section[id] { scroll-margin-block-start: .75rem; }
+.navigation a[aria-current="location"]::after { transform: scaleX(1); }
 
 @media (prefers-reduced-motion: reduce) {
   .navigation { transition: none; }
